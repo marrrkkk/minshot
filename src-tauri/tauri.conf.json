@@ -18,6 +18,7 @@
         "url": "index.html",
         "visible": true,
         "skipTaskbar": false,
+        "backgroundColor": "#09090b",
         "width": 380,
         "height": 340,
         "resizable": false,

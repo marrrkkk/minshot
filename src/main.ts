@@ -6,7 +6,7 @@ const homeView = document.getElementById("homeView") as HTMLDivElement;
 const shotView = document.getElementById("shotView") as HTMLDivElement;
 const shotCard = document.getElementById("shotCard") as HTMLDivElement;
 const img = document.getElementById("shot") as HTMLImageElement;
-const meta = document.getElementById("meta") as HTMLSpanElement;
+const dims = document.getElementById("dims") as HTMLSpanElement;
 const status = document.getElementById("status") as HTMLDivElement;
 
 // Closing the window hides it to the tray instead of quitting (tray: Open minshot).
@@ -21,14 +21,27 @@ document.querySelectorAll(".newBtn").forEach((b) =>
 document.querySelectorAll(".quit").forEach((b) =>
   b.addEventListener("click", () => invoke("quit_app")),
 );
+document.querySelectorAll(".copyBtn").forEach((b) =>
+  b.addEventListener("click", async () => {
+    const btn = b as HTMLButtonElement;
+    try {
+      await invoke("copy_to_clipboard");
+      const prev = btn.textContent;
+      btn.textContent = "✓ Copied";
+      setTimeout(() => (btn.textContent = prev), 1200);
+    } catch (err) {
+      console.error("copy failed", err);
+    }
+  }),
+);
 
 // A capture turns the main window into the screenshot view.
 listen<{ base64: string; width: number; height: number; clipboard: boolean }>(
   "capture-ready",
   (e) => {
     img.src = `data:image/png;base64,${e.payload.base64}`;
+    dims.textContent = `${e.payload.width}×${e.payload.height}`;
     const clip = e.payload.clipboard ? "copied to clipboard ✓" : "clipboard copy failed";
-    meta.textContent = `minshot — ${e.payload.width}×${e.payload.height} — drag into terminal or Ctrl+V`;
     status.textContent = `${e.payload.width}×${e.payload.height} captured — ${clip}`;
     homeView.classList.add("hidden");
     shotView.classList.remove("hidden");

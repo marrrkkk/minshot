@@ -84,6 +84,18 @@ fn quit_app(app: AppHandle) {
     app.exit(0);
 }
 
+#[tauri::command]
+fn copy_to_clipboard(state: tauri::State<'_, AppState>) -> Result<(), String> {
+    let png = {
+        let guard = state.last.lock().map_err(|e| e.to_string())?;
+        guard
+            .as_ref()
+            .map(|l| l.png.clone())
+            .ok_or_else(|| "no capture yet".to_string())?
+    };
+    clipboard_img::copy_png_to_clipboard(&png)
+}
+
 /// Resize the main window to exactly fit its rendered content (logical px,
 /// measured by the frontend after the image loads). Kills the "extra space at
 /// the bottom" class of bugs: the window is only ever as tall as its content.
@@ -259,6 +271,7 @@ fn main() {
             show_overlay,
             show_main,
             quit_app,
+            copy_to_clipboard,
             fit_main,
             hide_overlay,
             capture_region,
