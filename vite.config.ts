@@ -9,7 +9,6 @@ export default defineConfig({
       input: {
         main: "index.html",
         overlay: "src/overlay.html",
-        preview: "src/preview.html",
       },
     },
   },

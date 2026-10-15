@@ -41,23 +41,6 @@
         "shadow": false,
         "width": 800,
         "height": 600
-      },
-      {
-        "label": "preview",
-        "title": "minshot",
-        "url": "src/preview.html",
-        "transparent": true,
-        "decorations": false,
-        "alwaysOnTop": true,
-        "skipTaskbar": true,
-        "visible": false,
-        "resizable": false,
-        "maximizable": false,
-        "minimizable": false,
-        "focus": false,
-        "shadow": true,
-        "width": 360,
-        "height": 280
       }
     ],
     "security": {

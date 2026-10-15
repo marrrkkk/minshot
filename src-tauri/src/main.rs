@@ -29,12 +29,17 @@ fn overlay_window(app: &AppHandle) -> Result<WebviewWindow, String> {
         .ok_or_else(|| "overlay window missing".to_string())
 }
 
-fn preview_window(app: &AppHandle) -> Result<WebviewWindow, String> {
-    app.get_webview_window("preview")
-        .ok_or_else(|| "preview window missing".to_string())
+fn main_window(app: &AppHandle) -> Result<WebviewWindow, String> {
+    app.get_webview_window("main")
+        .ok_or_else(|| "main window missing".to_string())
 }
 
 fn show_overlay_inner(app: &AppHandle) -> Result<(), String> {
+    // Single-window UX: hide the main window while selecting, so it never
+    // covers the target area (or ends up in its own screenshot).
+    if let Ok(main) = main_window(app) {
+        let _ = main.hide();
+    }
     let overlay = overlay_window(app)?;
     // Span the whole virtual screen so every monitor is selectable.
     let (vx, vy, vw, vh) = win::virtual_screen_rect();
@@ -58,9 +63,7 @@ fn show_overlay(app: AppHandle) -> Result<(), String> {
 }
 
 fn show_main_inner(app: &AppHandle) -> Result<(), String> {
-    let main = app
-        .get_webview_window("main")
-        .ok_or_else(|| "main window missing".to_string())?;
+    let main = main_window(app)?;
     main.show().map_err(|e| e.to_string())?;
     main.set_focus().map_err(|e| e.to_string())?;
     Ok(())
@@ -69,11 +72,6 @@ fn show_main_inner(app: &AppHandle) -> Result<(), String> {
 #[tauri::command]
 fn hide_overlay(app: AppHandle) -> Result<(), String> {
     overlay_window(&app)?.hide().map_err(|e| e.to_string())
-}
-
-#[tauri::command]
-fn hide_preview(app: AppHandle) -> Result<(), String> {
-    preview_window(&app)?.hide().map_err(|e| e.to_string())
 }
 
 #[tauri::command]
@@ -86,14 +84,14 @@ fn quit_app(app: AppHandle) {
     app.exit(0);
 }
 
-/// Resize the preview window to exactly fit its rendered content (logical px,
+/// Resize the main window to exactly fit its rendered content (logical px,
 /// measured by the frontend after the image loads). Kills the "extra space at
 /// the bottom" class of bugs: the window is only ever as tall as its content.
 #[tauri::command]
-fn fit_preview(app: AppHandle, width: f64, height: f64) -> Result<(), String> {
+fn fit_main(app: AppHandle, width: f64, height: f64) -> Result<(), String> {
     let w = width.max(200.0).min(900.0);
     let h = height.max(120.0).min(800.0);
-    preview_window(&app)?
+    main_window(&app)?
         .set_size(tauri::Size::Logical(tauri::LogicalSize {
             width: w,
             height: h,
@@ -139,21 +137,13 @@ fn capture_region(
         }
     }
 
-    // Show the floating thumbnail, sized to the shot's aspect ratio.
-    const PREVIEW_W: u32 = 360;
-    const CHROME_H: u32 = 96; // title bar + footer
-    let aspect_h = ((cap.height as f64 / cap.width.max(1) as f64) * PREVIEW_W as f64) as u32;
-    let preview = preview_window(&app)?;
-    preview
-        .set_size(tauri::Size::Logical(tauri::LogicalSize {
-            width: PREVIEW_W as f64,
-            height: (aspect_h + CHROME_H) as f64,
-        }))
-        .map_err(|e| e.to_string())?;
-    preview.show().map_err(|e| e.to_string())?;
+    // Single-window UX: the main window reappears as the screenshot view.
+    // No focus steal — the user is usually headed back to the terminal to
+    // paste. The frontend resizes the window to fit via `fit_main`.
+    main_window(&app)?.show().map_err(|e| e.to_string())?;
 
     app.emit_to(
-        "preview",
+        "main",
         "capture-ready",
         serde_json::json!({
             "base64": base64::Engine::encode(
@@ -269,9 +259,8 @@ fn main() {
             show_overlay,
             show_main,
             quit_app,
-            fit_preview,
+            fit_main,
             hide_overlay,
-            hide_preview,
             capture_region,
             start_native_drag
         ]);

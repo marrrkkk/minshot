@@ -312,7 +312,7 @@ mod imp {
     }
 }
 
-/// Kick off a native drag of `file` from the preview window.
+/// Kick off a native drag of `file` from the main window.
 /// Hops to the main thread and returns immediately; the drag continues
 /// modally there until the user drops or cancels.
 pub fn start_file_drag_main_thread(app: tauri::AppHandle, file: PathBuf) -> Result<(), String> {

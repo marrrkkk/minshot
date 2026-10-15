@@ -2,6 +2,11 @@ import { invoke } from "@tauri-apps/api/core";
 import { listen } from "@tauri-apps/api/event";
 import { getCurrentWindow } from "@tauri-apps/api/window";
 
+const homeView = document.getElementById("homeView") as HTMLDivElement;
+const shotView = document.getElementById("shotView") as HTMLDivElement;
+const shotCard = document.getElementById("shotCard") as HTMLDivElement;
+const img = document.getElementById("shot") as HTMLImageElement;
+const meta = document.getElementById("meta") as HTMLSpanElement;
 const status = document.getElementById("status") as HTMLDivElement;
 
 // Closing the window hides it to the tray instead of quitting (tray: Open minshot).
@@ -10,11 +15,56 @@ getCurrentWindow().onCloseRequested(async (e) => {
   await getCurrentWindow().hide();
 });
 
-document.getElementById("newBtn")?.addEventListener("click", () => invoke("show_overlay"));
-document.getElementById("quit")?.addEventListener("click", () => invoke("quit_app"));
+document.querySelectorAll(".newBtn").forEach((b) =>
+  b.addEventListener("click", () => invoke("show_overlay")),
+);
+document.querySelectorAll(".quit").forEach((b) =>
+  b.addEventListener("click", () => invoke("quit_app")),
+);
 
-// Show the latest capture result, like Snipping Tool's status line.
-listen<{ width: number; height: number; clipboard: boolean }>("capture-ready", (e) => {
-  const clip = e.payload.clipboard ? "copied to clipboard ✓" : "clipboard copy failed";
-  status.textContent = `${e.payload.width}×${e.payload.height} captured — ${clip}`;
+// A capture turns the main window into the screenshot view.
+listen<{ base64: string; width: number; height: number; clipboard: boolean }>(
+  "capture-ready",
+  (e) => {
+    img.src = `data:image/png;base64,${e.payload.base64}`;
+    const clip = e.payload.clipboard ? "copied to clipboard ✓" : "clipboard copy failed";
+    meta.textContent = `minshot — ${e.payload.width}×${e.payload.height} — drag into terminal or Ctrl+V`;
+    status.textContent = `${e.payload.width}×${e.payload.height} captured — ${clip}`;
+    homeView.classList.add("hidden");
+    shotView.classList.remove("hidden");
+  },
+);
+
+// Size the window to exactly fit the rendered shot view (no dead space):
+// measure after the image decodes, then ask Rust to fit the window.
+img.addEventListener("load", () => {
+  requestAnimationFrame(() => {
+    if (img.naturalWidth === 0) return;
+    void invoke("fit_main", {
+      width: document.documentElement.clientWidth,
+      height: shotView.offsetHeight,
+    }).catch((err) => console.error("fit window failed", err));
+  });
+});
+
+// Dragging the image starts a native OS file-drag (CF_HDROP) of the temp PNG.
+// Terminals receive it as a file path, which OpenCode attaches as an image.
+// The `.dragging` class gives press-and-hold feedback until the drop finishes.
+let dragArmed = true;
+async function beginNativeDrag(e: Event) {
+  e.preventDefault();
+  if (!dragArmed) return;
+  dragArmed = false;
+  shotCard.classList.add("dragging");
+  try {
+    await invoke("start_native_drag");
+  } catch (err) {
+    console.error("native drag failed", err);
+  } finally {
+    shotCard.classList.remove("dragging");
+    dragArmed = true;
+  }
+}
+img.addEventListener("pointerdown", (e) => {
+  if (e.button === 0) void beginNativeDrag(e);
 });

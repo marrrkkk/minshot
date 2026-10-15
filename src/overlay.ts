@@ -34,7 +34,7 @@ window.addEventListener("mouseup", async (e) => {
   const w = Math.abs(e.clientX - startX);
   const h = Math.abs(e.clientY - startY);
   if (w < 4 || h < 4) {
-    await invoke("hide_overlay");
+    await cancelCapture();
     return;
   }
   try {
@@ -44,10 +44,17 @@ window.addEventListener("mouseup", async (e) => {
     });
   } catch (err) {
     console.error("capture failed", err);
-    await invoke("hide_overlay");
+    await cancelCapture();
   }
 });
 
+/// Dismiss the overlay and bring the main window back (it hides during
+/// selection so it never covers the target area).
+async function cancelCapture() {
+  await invoke("hide_overlay");
+  await invoke("show_main");
+}
+
 window.addEventListener("keydown", async (e) => {
-  if (e.key === "Escape") await invoke("hide_overlay");
+  if (e.key === "Escape") await cancelCapture();
 });

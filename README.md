@@ -2,13 +2,13 @@
 
 Minimal Windows 11 screenshot-to-terminal utility. Rust + Tauri 2, vanilla TypeScript, no frameworks.
 
-**The whole UX is three things:**
+**The whole UX is one window:**
 
-1. A small **minshot window** (Snipping-Tool-style) with a **✂ New capture** button — or press `Ctrl+Shift+4` anywhere.
-2. Drag a rectangle on the fullscreen overlay (`Esc` cancels) → a small always-on-top **thumbnail** appears, sized to exactly fit the shot.
-3. **Drag the thumbnail** into a terminal (it shrinks and shows a "Release to drop" hint while held), or press `Ctrl+V` — the image is already on the clipboard. A new capture replaces the thumbnail (no history, no save dialog).
+1. The **minshot window** (Snipping-Tool-style) with a **✂ New capture** button — or press `Ctrl+Shift+4` anywhere. The window hides itself while you select, so it never covers the target area.
+2. Drag a rectangle on the fullscreen overlay (`Esc`/click cancels and brings the window back) → the same window reappears as the **screenshot view**, auto-fitted to the shot.
+3. **Drag the screenshot** into a terminal (it shrinks and shows a "Release to drop" hint while held), or press `Ctrl+V` — the image is already on the clipboard. A new capture replaces the shot (no history, no save dialog).
 
-Closing the main window hides it to the tray (Open / Capture / Quit there).
+Closing the window hides it to the tray (Open / Capture / Quit there).
 
 ## Terminal image input: what actually works
 
@@ -24,15 +24,16 @@ Honest summary: **drag = file path that OpenCode upgrades to an image; paste = a
 
 | Behavior | Status | Evidence |
 |---|---|---|
-| `Ctrl+Shift+4` shows fullscreen overlay / `Esc` cancels, no stray files | ✅ verified | Drove the running app via shortcut + key events; overlay window visible fullscreen, hidden after `Esc`, temp dir untouched |
+| `Ctrl+Shift+4` shows fullscreen overlay, main hides / `Esc` cancels and restores main, no stray files | ✅ verified | Drove the running app via shortcut + key events; overlay fullscreen, main hidden during selection, main back after `Esc`, temp dir untouched |
 | Pixel-accurate region capture | ✅ verified | 400×300 drag → 400×300 PNG, valid PNG magic; real-screen unit test passes |
-| Floating thumbnail appears, overlay hides | ✅ verified | Preview window visible with captured size after every capture |
+| Single window becomes the shot view, sized to fit | ✅ verified | Main window reappears at captured aspect after every capture; exact-fit resize confirmed numerically |
+| Main-window ✂ New capture button (home + shot views) | ✅ verified | Real clicks on both buttons opened the overlay |
 | New capture replaces old (no history) | ✅ verified | Temp dir holds exactly 1 PNG after consecutive captures; old file deleted |
 | Clipboard auto-copy (`Ctrl+V` source) | ✅ verified | `Clipboard.ContainsImage()` true after capture; clipboard round-trip unit test passes |
 | Multi-monitor virtual-screen overlay | ⚠️ implemented, single-monitor verified | Overlay spans `GetSystemMetrics` virtual screen; capture clamps to the monitor holding the selection; only one display available to test |
 | Native file drag (CF_HDROP `DoDragDrop`) | ⚠️ implemented, initiation + data verified; drop arrival unverified here | `DoDragDrop` runs, targets probe `CF_HDROP` (`QueryGetData`/`GetData` served live), HDROP payload layout unit-tested; but synthetic mouse input does not steer OLE drop targeting in this sandbox (even native Notepad→test-target drags reach nothing), so no target-side arrival could be observed. On a real desktop the OS routes the drop normally. Fast-click guard prevents starting a drag after button release, so the app cannot wedge. |
 | Drop into Windows Terminal / OpenCode TUI | ❌ not tested here | No terminal automation available; relies on OpenCode's documented dropped-path→attachment behavior. If your terminal only inserts the path as text, use `Ctrl+V` (verified path). |
-| Temp cleanup on graceful exit | Implemented, not verified here | `RunEvent::Exit` removes `%TEMP%\minshot`; stale (>24h) files pruned at startup. Only force-kills were possible in testing, which bypass cleanup by design. |
+| Temp cleanup on graceful exit | ✅ verified | Quit button exits the app and `%TEMP%\minshot` is removed; stale (>24h) files pruned at startup |
 
 ## Install dependencies
 
@@ -60,11 +61,10 @@ First `dev`/`build` compiles all Rust deps (one-time, several minutes).
 
 ## Use
 
-- Open the **minshot window** and click **✂ New capture**, or press `Ctrl+Shift+4` anywhere → overlay. Drag a rectangle → thumbnail pops up (window auto-fits the shot, no dead space). `Esc` cancels.
-- **Drag the image** from the thumbnail into Windows Terminal / OpenCode → path is inserted and attached as an image. While held, the thumbnail shrinks with a drop hint.
+- Open the **minshot window** and click **✂ New capture**, or press `Ctrl+Shift+4` anywhere (the window hides during selection). Drag a rectangle → the window returns showing your screenshot, auto-fitted. `Esc`/click cancels and brings the window back.
+- **Drag the screenshot** into Windows Terminal / OpenCode → path is inserted and attached as an image. While held, it shrinks with a drop hint.
 - **`Ctrl+V`** where images are accepted → pastes the screenshot (no save step; PNG, auto-copied on capture).
-- Drag the thumbnail's **title bar** to move it; **✕** (or `Esc` when focused) dismisses it.
-- Closing the main window hides it to the tray (tray: Open / Capture / Quit; Quit also removes temp files). Temp files live in `%TEMP%\minshot\` with unique names, replaced per capture, stale ones (>24h) pruned at startup, all removed on exit.
+- Drag the window by its header bars; Quit removes temp files. Temp files live in `%TEMP%\minshot\` with unique names, replaced per capture, stale ones (>24h) pruned at startup, all removed on exit.
 
 ## Limitations (verified or by design)
 
