@@ -1,0 +1,21 @@
+<!doctype html>
+<html>
+<head>
+<meta charset="utf-8" />
+<title>minshot overlay</title>
+<style>
+  html, body { margin: 0; padding: 0; width: 100vw; height: 100vh; overflow: hidden;
+    background: rgba(0,0,0,0.45); cursor: crosshair; user-select: none; }
+  #sel { position: fixed; border: 1.5px solid #4da3ff; background: rgba(77,163,255,0.12);
+    display: none; pointer-events: none; }
+  #hint { position: fixed; top: 14px; left: 50%; transform: translateX(-50%);
+    color: #fff; font: 13px/1.4 system-ui, sans-serif; background: rgba(0,0,0,0.55);
+    padding: 6px 12px; border-radius: 6px; pointer-events: none; }
+</style>
+</head>
+<body>
+<div id="hint">Drag to select a region &middot; Esc to cancel</div>
+<div id="sel"></div>
+<script type="module" src="./overlay.ts"></script>
+</body>
+</html>

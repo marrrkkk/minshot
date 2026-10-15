@@ -1,0 +1,30 @@
+[package]
+name = "minshot"
+version = "0.1.0"
+edition = "2021"
+authors = ["minshot"]
+description = "Minimal Windows screenshot-to-terminal utility"
+rust-version = "1.77"
+
+[build-dependencies]
+tauri-build = { version = "2", features = [] }
+
+[dependencies]
+tauri = { version = "2", features = ["tray-icon"] }
+tauri-plugin-global-shortcut = "2"
+serde = { version = "1", features = ["derive"] }
+serde_json = "1"
+xcap = "0.9"
+arboard = "3"
+image = { version = "0.25", default-features = false, features = ["png"] }
+uuid = { version = "1", features = ["v4"] }
+base64 = "0.22"
+drag = "2"
+raw-window-handle = "0.6"
+
+[target.'cfg(windows)'.dependencies]
+windows = { version = "0.61", features = ["Win32_UI_WindowsAndMessaging"] }
+
+[features]
+default = ["custom-protocol"]
+custom-protocol = ["tauri/custom-protocol"]

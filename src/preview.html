@@ -1,0 +1,32 @@
+<!doctype html>
+<html>
+<head>
+<meta charset="utf-8" />
+<title>minshot</title>
+<style>
+  html, body { margin: 0; padding: 0; background: transparent; overflow: hidden;
+    font-family: system-ui, -apple-system, "Segoe UI", sans-serif; }
+  #card { margin: 0; border-radius: 10px; overflow: hidden;
+    background: rgba(24,24,27,0.96); border: 1px solid rgba(255,255,255,0.14);
+    box-shadow: 0 8px 30px rgba(0,0,0,0.45); }
+  #bar { display: flex; align-items: center; gap: 8px; padding: 6px 8px;
+    color: #e4e4e7; font-size: 12px; -webkit-app-region: drag; app-region: drag; }
+  #bar .dot { width: 8px; height: 8px; border-radius: 50%; background: #4ade80; }
+  #bar span { flex: 1; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; opacity: 0.85; }
+  #close { -webkit-app-region: no-drag; app-region: no-drag; border: 0; border-radius: 6px;
+    background: transparent; color: #e4e4e7; font-size: 14px; cursor: pointer; padding: 2px 8px; }
+  #close:hover { background: rgba(255,255,255,0.12); }
+  #shot { display: block; width: 100%; cursor: grab; -webkit-app-region: no-drag; app-region: no-drag; }
+  #shot:active { cursor: grabbing; }
+  #foot { padding: 6px 8px 8px; color: #a1a1aa; font-size: 11px; }
+</style>
+</head>
+<body>
+<div id="card">
+  <div id="bar"><div class="dot"></div><span id="meta">minshot — drag image into terminal, or Ctrl+V to paste</span><button id="close" title="Dismiss">✕</button></div>
+  <img id="shot" alt="screenshot preview" draggable="true" />
+  <div id="foot">Drag the image into Windows Terminal / OpenCode, or paste with Ctrl+V. New capture replaces this.</div>
+</div>
+<script type="module" src="./preview.ts"></script>
+</body>
+</html>

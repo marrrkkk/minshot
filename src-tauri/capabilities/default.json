@@ -1,0 +1,7 @@
+{
+  "$schema": "../gen/schemas/desktop-schema.json",
+  "identifier": "default",
+  "description": "Minimal capabilities for minshot. Window and tray work happens in Rust (no capability needed); the frontend only invokes app commands and listens for the capture event.",
+  "windows": ["main", "overlay", "preview"],
+  "permissions": ["core:default", "core:event:allow-listen"]
+}
