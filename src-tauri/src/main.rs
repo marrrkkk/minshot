@@ -142,15 +142,8 @@ fn capture_region(
 }
 
 #[tauri::command]
-fn copy_to_clipboard(state: tauri::State<'_, AppState>) -> Result<(), String> {
-    let guard = state.last.lock().map_err(|e| e.to_string())?;
-    let last = guard.as_ref().ok_or_else(|| "no capture yet".to_string())?;
-    clipboard_img::copy_png_to_clipboard(&last.png)
-}
-
-#[tauri::command]
 fn start_native_drag(
-    window: WebviewWindow,
+    app: AppHandle,
     state: tauri::State<'_, AppState>,
 ) -> Result<(), String> {
     let path = {
@@ -160,7 +153,7 @@ fn start_native_drag(
             .map(|l| l.path.clone())
             .ok_or_else(|| "no capture yet".to_string())?
     };
-    win::drag::start_file_drag(&window, path)
+    win::drag::start_file_drag_main_thread(app, path)
 }
 
 fn main() {
@@ -190,7 +183,9 @@ fn main() {
                 use tauri_plugin_global_shortcut::GlobalShortcutExt;
                 // Preferred shortcut. If it collides, capture is still
                 // available from the tray menu.
-                let _ = app.global_shortcut().register("Ctrl+Shift+4");
+                if let Err(e) = app.global_shortcut().register("Ctrl+Shift+4") {
+                    eprintln!("[minshot] shortcut register failed: {e}");
+                }
             }
 
             // Minimal tray: Capture + Quit (the main window stays hidden).
@@ -229,7 +224,6 @@ fn main() {
             hide_overlay,
             hide_preview,
             capture_region,
-            copy_to_clipboard,
             start_native_drag
         ]);
 

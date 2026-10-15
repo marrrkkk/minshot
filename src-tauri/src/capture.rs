@@ -114,4 +114,13 @@ mod tests {
     fn rect_rounds_to_whole_pixels() {
         assert_eq!(normalize_rect(10.4, 20.6, 100.4, 200.6), Some((10, 21, 90, 180)));
     }
+
+    /// Hits the real screen (DXGI) — verifies xcap + crop + PNG encode on hardware.
+    #[test]
+    fn smoke_capture_real_screen() {
+        let cap = capture_physical_rect(10, 10, 64, 64).expect("screen capture failed");
+        assert_eq!((cap.width, cap.height), (64, 64));
+        assert!(cap.png_bytes.len() > 100);
+        assert_eq!(&cap.png_bytes[0..8], &[137, 80, 78, 71, 13, 10, 26, 10]);
+    }
 }

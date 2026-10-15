@@ -20,3 +20,26 @@ pub fn copy_png_to_clipboard(png_bytes: &[u8]) -> Result<(), String> {
         })
         .map_err(|e| format!("clipboard copy failed: {e}"))
 }
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    /// Round-trips a generated image through the real Windows clipboard.
+    /// Overwrites the session clipboard — dev-machine only.
+    #[test]
+    fn clipboard_round_trip() {
+        let img: image::RgbaImage = image::RgbaImage::from_pixel(8, 8, image::Rgba([9, 9, 9, 255]));
+        let mut png = Vec::new();
+        {
+            use image::ImageEncoder;
+            image::codecs::png::PngEncoder::new(&mut png)
+                .write_image(img.as_raw(), 8, 8, image::ExtendedColorType::Rgba8)
+                .unwrap();
+        }
+        copy_png_to_clipboard(&png).expect("clipboard copy failed");
+        let mut cb = arboard::Clipboard::new().expect("clipboard open failed");
+        let back = cb.get_image().expect("clipboard read-back failed");
+        assert_eq!((back.width, back.height), (8, 8));
+    }
+}

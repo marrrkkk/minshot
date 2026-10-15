@@ -13,10 +13,24 @@ Minimal Windows 11 screenshot-to-terminal utility. Rust + Tauri 2, vanilla TypeS
 Researched against Windows Terminal, conhost, and OpenCode docs/behavior before implementing:
 
 - **Terminals do not accept bitmap drops.** Dragging *pixels* (`CF_DIB`/`CF_BITMAP`) into Windows Terminal is impossible — a file drop lands as **text: the file path**. This is a terminal limitation, not something an app can work around.
-- **OpenCode TUI turns a dropped PNG path into an image attachment.** Per OpenCode docs: *"You can also drag a supported image into a terminal that exposes the dropped file path to the TUI. The TUI reads PNG, JPEG, GIF, and WebP as image attachments."* So minshot drags a **temp PNG file** (`CF_HDROP`, native `DoDragDrop` via the `drag` crate). Dropping it on Windows Terminal inserts the quoted path, and OpenCode attaches it as an image.
-- **Clipboard paste is the pixel path.** minshot auto-copies every capture as PNG/DIB to the Windows clipboard (`arboard`). `Ctrl+V` in OpenCode TUI attaches it as an image (OpenCode reads the clipboard itself; Windows Terminal forwards the paste keypress to the app). If a target only accepts text, paste does nothing — use the drag instead, or vice versa.
+- **OpenCode TUI turns a dropped PNG path into an image attachment.** Per OpenCode docs: *"You can also drag a supported image into a terminal that exposes the dropped file path to the TUI. The TUI reads PNG, JPEG, GIF, and WebP as image attachments."* So minshot drags a **temp PNG file** (native `CF_HDROP` `DoDragDrop`, hand-rolled `IDataObject` in `src-tauri/src/win/drag.rs`). Dropping it on Windows Terminal inserts the quoted path, and OpenCode attaches it as an image.
+- **Clipboard paste is the pixel path and the primary workflow.** minshot auto-copies every capture as PNG/DIB to the Windows clipboard (`arboard`). `Ctrl+V` in OpenCode TUI attaches it as an image (OpenCode reads the clipboard itself; Windows Terminal forwards the paste keypress to the app).
 
-Honest summary: **drag = file path that OpenCode upgrades to an image; paste = actual image bytes.** Both end with the model seeing the screenshot. Neither inserts a path you must handle manually.
+Honest summary: **drag = file path that OpenCode upgrades to an image; paste = actual image bytes.** Both end with the model seeing the screenshot.
+
+## Verification status (tested on Windows 11, single 1920×1080 display)
+
+| Behavior | Status | Evidence |
+|---|---|---|
+| `Ctrl+Shift+4` shows fullscreen overlay / `Esc` cancels, no stray files | ✅ verified | Drove the running app via shortcut + key events; overlay window visible fullscreen, hidden after `Esc`, temp dir untouched |
+| Pixel-accurate region capture | ✅ verified | 400×300 drag → 400×300 PNG, valid PNG magic; real-screen unit test passes |
+| Floating thumbnail appears, overlay hides | ✅ verified | Preview window visible with captured size after every capture |
+| New capture replaces old (no history) | ✅ verified | Temp dir holds exactly 1 PNG after consecutive captures; old file deleted |
+| Clipboard auto-copy (`Ctrl+V` source) | ✅ verified | `Clipboard.ContainsImage()` true after capture; clipboard round-trip unit test passes |
+| Multi-monitor virtual-screen overlay | ⚠️ implemented, single-monitor verified | Overlay spans `GetSystemMetrics` virtual screen; capture clamps to the monitor holding the selection; only one display available to test |
+| Native file drag (CF_HDROP `DoDragDrop`) | ⚠️ implemented, initiation + data verified; drop arrival unverified here | `DoDragDrop` runs, targets probe `CF_HDROP` (`QueryGetData`/`GetData` served live), HDROP payload layout unit-tested; but synthetic mouse input does not steer OLE drop targeting in this sandbox (even native Notepad→test-target drags reach nothing), so no target-side arrival could be observed. On a real desktop the OS routes the drop normally. Fast-click guard prevents starting a drag after button release, so the app cannot wedge. |
+| Drop into Windows Terminal / OpenCode TUI | ❌ not tested here | No terminal automation available; relies on OpenCode's documented dropped-path→attachment behavior. If your terminal only inserts the path as text, use `Ctrl+V` (verified path). |
+| Temp cleanup on graceful exit | Implemented, not verified here | `RunEvent::Exit` removes `%TEMP%\minshot`; stale (>24h) files pruned at startup. Only force-kills were possible in testing, which bypass cleanup by design. |
 
 ## Install dependencies
 
@@ -37,7 +51,7 @@ Honest summary: **drag = file path that OpenCode upgrades to an image; paste = a
 npm install
 npm run tauri dev      # run with hot reload
 npm run tauri build    # → src-tauri/target/release/bundle/ (NSIS installer + portable exe)
-cargo test --manifest-path src-tauri/Cargo.toml   # unit tests (rect math, temp names)
+cargo test --manifest-path src-tauri/Cargo.toml   # 8 unit tests (rect math, temp names, HDROP layout, clipboard + screen smoke)
 ```
 
 First `dev`/`build` compiles all Rust deps (one-time, several minutes).
@@ -52,7 +66,7 @@ First `dev`/`build` compiles all Rust deps (one-time, several minutes).
 
 ## Limitations (verified or by design)
 
-- Multi-monitor works via one overlay spanning the virtual screen; capture is clamped to the monitor holding the selection center. Mixed-DPI setups: mapping uses the overlay window's scale, so a selection on a differently-scaled monitor can be off by the scale ratio. (Exact mixed-DPI would need per-monitor overlays — out of scope.)
+- Mixed-DPI setups: mapping uses the overlay window's scale, so a selection on a differently-scaled monitor can be off by the scale ratio. (Exact mixed-DPI would need per-monitor overlays — out of scope.)
 - Drag into a terminal inserts a **file path**, per terminal design; only image-aware TUIs (OpenCode, etc.) upgrade it to an attachment. Plain shells will just show the path text.
 - Clipboard holds one image; copying anything else replaces it.
 - Single global shortcut, no configuration UI. If `Ctrl+Shift+4` collides with another app, use the tray menu.

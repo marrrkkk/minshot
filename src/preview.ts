@@ -18,15 +18,20 @@ window.addEventListener("keydown", async (e) => {
 // Dragging the image starts a native OS file-drag (CF_HDROP) of the temp PNG.
 // Terminals receive it as a file path, which OpenCode attaches as an image.
 // If a target only inserts the path as text, use Ctrl+V instead (image is on the clipboard).
+// Guard against re-entry while a drag is already running.
+let dragArmed = true;
 async function beginNativeDrag(e: Event) {
   e.preventDefault();
+  if (!dragArmed) return;
+  dragArmed = false;
   try {
     await invoke("start_native_drag");
   } catch (err) {
     console.error("native drag failed", err);
+  } finally {
+    dragArmed = true;
   }
 }
-img.addEventListener("dragstart", beginNativeDrag);
 img.addEventListener("pointerdown", (e) => {
   if (e.button === 0) void beginNativeDrag(e);
 });
