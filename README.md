@@ -61,9 +61,10 @@ First `dev`/`build` compiles all Rust deps (one-time, several minutes).
 
 ## Use
 
-- Open the **minshot window** and click **✂ New capture**, or press `Ctrl+Shift+4` anywhere (the window hides during selection). Drag a rectangle → the window returns showing your screenshot, auto-fitted. `Esc`/click cancels and brings the window back.
+- Open the **minshot window** and click **＋ New capture**, or press `Ctrl+Shift+4` anywhere (the window hides during selection). Drag a rectangle → the window returns showing your screenshot, auto-fitted. `Esc`/click cancels and brings the window back.
 - **Drag the screenshot** into Windows Terminal / OpenCode → path is inserted and attached as an image. While held, it shrinks with a drop hint.
-- **`Ctrl+V`** where images are accepted → pastes the screenshot (no save step; PNG, auto-copied on capture).
+- **`Ctrl+V`** where images are accepted → pastes the screenshot (no save step; PNG, auto-copied on capture). **⧉ Copy** re-copies it if the clipboard moved on.
+- UI follows the OS light/dark theme (shadcn zinc tokens, no frameworks or extra deps).
 - Drag the window by its header bars; Quit removes temp files. Temp files live in `%TEMP%\minshot\` with unique names, replaced per capture, stale ones (>24h) pruned at startup, all removed on exit.
 
 ## Limitations (verified or by design)
