@@ -1,6 +1,5 @@
 import { invoke } from "@tauri-apps/api/core";
 import { listen } from "@tauri-apps/api/event";
-import { getCurrentWindow } from "@tauri-apps/api/window";
 
 const homeView = document.getElementById("homeView") as HTMLDivElement;
 const shotView = document.getElementById("shotView") as HTMLDivElement;
@@ -8,12 +7,27 @@ const shotCard = document.getElementById("shotCard") as HTMLDivElement;
 const img = document.getElementById("shot") as HTMLImageElement;
 const dims = document.getElementById("dims") as HTMLSpanElement;
 const status = document.getElementById("status") as HTMLDivElement;
+const homeInner = document.getElementById("homeInner") as HTMLDivElement;
 
-// Closing the window hides it to the tray instead of quitting (tray: Open minshot).
-getCurrentWindow().onCloseRequested(async (e) => {
-  e.preventDefault();
-  await getCurrentWindow().hide();
-});
+// Size the window to exactly fit the home content on startup, so the footer
+// (Quit) can never end up clipped below the fold. Same mechanism as shots.
+function fitHome() {
+  requestAnimationFrame(() => {
+    void invoke("fit_main", {
+      width: document.documentElement.clientWidth,
+      height: homeInner.offsetHeight + 32,
+    }).catch((err) => console.error("fit window failed", err));
+  });
+}
+if (document.readyState === "loading") {
+  document.addEventListener("DOMContentLoaded", fitHome);
+} else {
+  fitHome();
+}
+
+// Closing the main window quits the app (Snipping-Tool-style: no hidden
+// background mode to get confused by; Quit buttons and the tray do the same).
+// The Rust side exits on the window-close event, so temp files are cleaned.
 
 document.querySelectorAll(".newBtn").forEach((b) =>
   b.addEventListener("click", () => invoke("show_overlay")),

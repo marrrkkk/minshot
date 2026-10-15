@@ -65,7 +65,7 @@ First `dev`/`build` compiles all Rust deps (one-time, several minutes).
 - **Drag the screenshot** into Windows Terminal / OpenCode → path is inserted and attached as an image. While held, it shrinks with a drop hint.
 - **`Ctrl+V`** where images are accepted → pastes the screenshot (no save step; PNG, auto-copied on capture). **⧉ Copy** re-copies it if the clipboard moved on.
 - UI follows the OS light/dark theme (shadcn zinc tokens, no frameworks or extra deps).
-- Drag the window by its header bars; Quit removes temp files. Temp files live in `%TEMP%\minshot\` with unique names, replaced per capture, stale ones (>24h) pruned at startup, all removed on exit.
+- Drag the window by its header bars. **Closing the window (×), Quit buttons, or tray Quit all quit the app** and remove temp files. Temp files live in `%TEMP%\minshot\` with unique names, replaced per capture, stale ones (>24h) pruned at startup, all removed on exit.
 
 ## Limitations (verified or by design)
 

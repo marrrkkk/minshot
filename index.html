@@ -8,6 +8,7 @@
 <style>
   #homeView { display: flex; flex-direction: column; height: 100vh; padding: 1rem; box-sizing: border-box; }
   .appHead { display: flex; align-items: center; gap: 0.625rem; }
+  .dragZone { display: flex; align-items: center; gap: 0.625rem; flex: 1; min-width: 0; }
   .logoMark {
     width: 2rem; height: 2rem; border-radius: 0.5rem; flex: none;
     background: var(--primary); color: var(--primary-foreground);
@@ -50,21 +51,26 @@
 </head>
 <body>
 <div id="homeView">
-  <div class="appHead" data-tauri-drag-region>
-    <div class="logoMark">✂</div>
-    <div><h1>minshot</h1><p class="muted">Screenshot → terminal, minus the saving.</p></div>
+  <div id="homeInner">
+  <div class="appHead">
+    <div class="dragZone" data-tauri-drag-region>
+      <div class="logoMark">✂</div>
+      <div><h1>minshot</h1><p class="muted">Screenshot → terminal, minus the saving.</p></div>
+    </div>
     <div class="spacer"></div>
     <span class="badge">v0.1.0</span>
+    <button class="btn btn-ghost quit" title="Quit minshot">Quit</button>
   </div>
   <button class="btn btn-primary btn-block newBtn" title="Capture a screen region">＋ New capture</button>
   <div class="shortcutRow muted">or press <span class="kbd">Ctrl</span><span class="kbd">Shift</span><span class="kbd">4</span> anywhere</div>
   <div id="status"></div>
-  <div class="foot"><button class="btn btn-ghost quit">Quit</button></div>
+  <div class="foot"><span class="ver">PNG · auto-copy · no history</span></div>
+  </div>
 </div>
 <div id="shotView" class="hidden">
   <div id="shotCard" class="card">
-    <div id="metaBar" data-tauri-drag-region>
-      <div class="dot"></div><span>Screenshot</span><div class="spacer"></div><span class="badge" id="dims">–</span>
+    <div id="metaBar">
+      <div class="dot" data-tauri-drag-region></div><span data-tauri-drag-region>Screenshot</span><div class="spacer"></div><span class="badge" id="dims">–</span><button class="btn btn-ghost quit" title="Quit minshot">Quit</button>
     </div>
     <div id="imgwrap"><img id="shot" alt="screenshot" draggable="false" /><div id="dropHint">Release to drop into terminal</div></div>
     <div id="shotFoot" class="muted">Drag the image into Windows Terminal / OpenCode, or paste with Ctrl+V.</div>
@@ -73,7 +79,7 @@
     <button class="btn btn-primary newBtn" title="Capture a screen region">＋ New capture</button>
     <button class="btn btn-secondary copyBtn" title="Copy the screenshot to the clipboard">⧉ Copy</button>
   </div>
-  <div class="foot"><button class="btn btn-ghost quit">Quit</button></div>
+  <div class="foot"><span class="ver">PNG · auto-copy · no history</span></div>
 </div>
 <script type="module" src="/src/main.ts"></script>
 </body>

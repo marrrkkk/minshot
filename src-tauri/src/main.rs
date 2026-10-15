@@ -267,6 +267,15 @@ fn main() {
                 .build(app)?;
             Ok(())
         })
+        .on_window_event(|window, event| {
+            // Closing the main window quits the whole app (Snipping-Tool-style:
+            // no hidden background mode). Temp files are cleaned on exit.
+            if window.label() == "main"
+                && matches!(event, tauri::WindowEvent::CloseRequested { .. })
+            {
+                window.app_handle().exit(0);
+            }
+        })
         .invoke_handler(tauri::generate_handler![
             show_overlay,
             show_main,
