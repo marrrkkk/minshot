@@ -146,13 +146,19 @@ fn start_native_drag(
     app: AppHandle,
     state: tauri::State<'_, AppState>,
 ) -> Result<(), String> {
-    let path = {
+    let (path, png) = {
         let guard = state.last.lock().map_err(|e| e.to_string())?;
         guard
             .as_ref()
-            .map(|l| l.path.clone())
+            .map(|l| (l.path.clone(), l.png.clone()))
             .ok_or_else(|| "no capture yet".to_string())?
     };
+    if !path.is_file() {
+        // Temp file lost after capture (external cleaners, AV): recreate it
+        // from the in-memory bytes so the drag still works.
+        tempfiles::ensure_dir().map_err(|e| format!("temp dir failed: {e}"))?;
+        std::fs::write(&path, &png).map_err(|e| format!("rewrite temp PNG failed: {e}"))?;
+    }
     win::drag::start_file_drag_main_thread(app, path)
 }
 
