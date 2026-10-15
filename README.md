@@ -4,9 +4,11 @@ Minimal Windows 11 screenshot-to-terminal utility. Rust + Tauri 2, vanilla TypeS
 
 **The whole UX is three things:**
 
-1. Press `Ctrl+Shift+4` → fullscreen region overlay (dim + drag a rectangle, `Esc` cancels).
-2. A small always-on-top thumbnail appears with your screenshot.
-3. Drag the thumbnail into a terminal, or press `Ctrl+V` — the image is already on the clipboard. A new capture replaces the thumbnail (no history, no save dialog).
+1. A small **minshot window** (Snipping-Tool-style) with a **✂ New capture** button — or press `Ctrl+Shift+4` anywhere.
+2. Drag a rectangle on the fullscreen overlay (`Esc` cancels) → a small always-on-top **thumbnail** appears, sized to exactly fit the shot.
+3. **Drag the thumbnail** into a terminal (it shrinks and shows a "Release to drop" hint while held), or press `Ctrl+V` — the image is already on the clipboard. A new capture replaces the thumbnail (no history, no save dialog).
+
+Closing the main window hides it to the tray (Open / Capture / Quit there).
 
 ## Terminal image input: what actually works
 
@@ -58,11 +60,11 @@ First `dev`/`build` compiles all Rust deps (one-time, several minutes).
 
 ## Use
 
-- `Ctrl+Shift+4` anywhere → overlay. Drag a rectangle → thumbnail pops up. `Esc` cancels.
-- **Drag the image** from the thumbnail into Windows Terminal / OpenCode → path is inserted and attached as an image.
+- Open the **minshot window** and click **✂ New capture**, or press `Ctrl+Shift+4` anywhere → overlay. Drag a rectangle → thumbnail pops up (window auto-fits the shot, no dead space). `Esc` cancels.
+- **Drag the image** from the thumbnail into Windows Terminal / OpenCode → path is inserted and attached as an image. While held, the thumbnail shrinks with a drop hint.
 - **`Ctrl+V`** where images are accepted → pastes the screenshot (no save step; PNG, auto-copied on capture).
 - Drag the thumbnail's **title bar** to move it; **✕** (or `Esc` when focused) dismisses it.
-- Tray icon: Capture region / Quit. Temp files live in `%TEMP%\minshot\` with unique names, replaced per capture, stale ones (>24h) pruned at startup, all removed on exit.
+- Closing the main window hides it to the tray (tray: Open / Capture / Quit; Quit also removes temp files). Temp files live in `%TEMP%\minshot\` with unique names, replaced per capture, stale ones (>24h) pruned at startup, all removed on exit.
 
 ## Limitations (verified or by design)
 

@@ -57,6 +57,15 @@ fn show_overlay(app: AppHandle) -> Result<(), String> {
     show_overlay_inner(&app)
 }
 
+fn show_main_inner(app: &AppHandle) -> Result<(), String> {
+    let main = app
+        .get_webview_window("main")
+        .ok_or_else(|| "main window missing".to_string())?;
+    main.show().map_err(|e| e.to_string())?;
+    main.set_focus().map_err(|e| e.to_string())?;
+    Ok(())
+}
+
 #[tauri::command]
 fn hide_overlay(app: AppHandle) -> Result<(), String> {
     overlay_window(&app)?.hide().map_err(|e| e.to_string())
@@ -65,6 +74,31 @@ fn hide_overlay(app: AppHandle) -> Result<(), String> {
 #[tauri::command]
 fn hide_preview(app: AppHandle) -> Result<(), String> {
     preview_window(&app)?.hide().map_err(|e| e.to_string())
+}
+
+#[tauri::command]
+fn show_main(app: AppHandle) -> Result<(), String> {
+    show_main_inner(&app)
+}
+
+#[tauri::command]
+fn quit_app(app: AppHandle) {
+    app.exit(0);
+}
+
+/// Resize the preview window to exactly fit its rendered content (logical px,
+/// measured by the frontend after the image loads). Kills the "extra space at
+/// the bottom" class of bugs: the window is only ever as tall as its content.
+#[tauri::command]
+fn fit_preview(app: AppHandle, width: f64, height: f64) -> Result<(), String> {
+    let w = width.max(200.0).min(900.0);
+    let h = height.max(120.0).min(800.0);
+    preview_window(&app)?
+        .set_size(tauri::Size::Logical(tauri::LogicalSize {
+            width: w,
+            height: h,
+        }))
+        .map_err(|e| e.to_string())
 }
 
 #[tauri::command]
@@ -194,8 +228,10 @@ fn main() {
                 }
             }
 
-            // Minimal tray: Capture + Quit (the main window stays hidden).
+            // Minimal tray: Open + Capture + Quit.
             use tauri::menu::{IsMenuItem, Menu, MenuItem};
+            let open_item =
+                MenuItem::with_id(app, "open", "Open minshot", true, None::<&str>)?;
             let capture_item =
                 MenuItem::with_id(app, "capture", "Capture region", true, None::<&str>)?;
             let quit_item =
@@ -203,6 +239,7 @@ fn main() {
             let menu = Menu::with_items(
                 app,
                 &[
+                    &open_item as &dyn IsMenuItem<tauri::Wry>,
                     &capture_item as &dyn IsMenuItem<tauri::Wry>,
                     &quit_item as &dyn IsMenuItem<tauri::Wry>,
                 ],
@@ -216,6 +253,9 @@ fn main() {
                 .menu(&menu)
                 .tooltip("minshot — Ctrl+Shift+4 to capture")
                 .on_menu_event(|app, event| match event.id.as_ref() {
+                    "open" => {
+                        let _ = show_main_inner(app);
+                    }
                     "capture" => {
                         let _ = show_overlay_inner(app);
                     }
@@ -227,6 +267,9 @@ fn main() {
         })
         .invoke_handler(tauri::generate_handler![
             show_overlay,
+            show_main,
+            quit_app,
+            fit_preview,
             hide_overlay,
             hide_preview,
             capture_region,

@@ -16,10 +16,13 @@
         "label": "main",
         "title": "minshot",
         "url": "index.html",
-        "visible": false,
-        "skipTaskbar": true,
-        "width": 320,
-        "height": 200
+        "visible": true,
+        "skipTaskbar": false,
+        "width": 380,
+        "height": 340,
+        "resizable": false,
+        "maximizable": false,
+        "minimizable": true
       },
       {
         "label": "overlay",

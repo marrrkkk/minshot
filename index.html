@@ -1,8 +1,38 @@
 <!doctype html>
 <html>
-  <head><meta charset="utf-8" /><title>minshot</title></head>
-  <body>
-    <p>minshot is running. Press Ctrl+Shift+4 to capture.</p>
-    <script type="module" src="/src/main.ts"></script>
-  </body>
+<head>
+<meta charset="utf-8" />
+<title>minshot</title>
+<style>
+  html, body { margin: 0; padding: 0; height: 100%; overflow: hidden;
+    font-family: system-ui, -apple-system, "Segoe UI", sans-serif;
+    background: #18181b; color: #e4e4e7; }
+  #app { display: flex; flex-direction: column; height: 100vh; padding: 16px; box-sizing: border-box; }
+  #head { display: flex; align-items: center; gap: 8px; font-size: 14px; font-weight: 600; }
+  #head .dot { width: 9px; height: 9px; border-radius: 50%; background: #4ade80; }
+  #head span.sub { font-weight: 400; color: #a1a1aa; font-size: 12px; }
+  #newBtn { margin-top: 14px; border: 1px solid rgba(77,163,255,0.45); border-radius: 8px;
+    background: rgba(77,163,255,0.14); color: #dbeafe; font-size: 14px; font-weight: 600;
+    padding: 12px; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 8px; }
+  #newBtn:hover { background: rgba(77,163,255,0.24); }
+  #newBtn:active { transform: scale(0.98); }
+  #hint { margin-top: 8px; font-size: 12px; color: #a1a1aa; text-align: center; }
+  #hint b { color: #d4d4d8; font-weight: 600; }
+  #status { margin-top: auto; font-size: 12px; color: #4ade80; min-height: 16px; }
+  #foot { display: flex; justify-content: space-between; align-items: center; margin-top: 6px; }
+  #quit { border: 0; background: transparent; color: #71717a; font-size: 12px; cursor: pointer; padding: 4px 0; }
+  #quit:hover { color: #e4e4e7; }
+  #ver { color: #52525b; font-size: 11px; }
+</style>
+</head>
+<body>
+<div id="app">
+  <div id="head" data-tauri-drag-region><div class="dot"></div>minshot <span class="sub">screenshot → terminal</span></div>
+  <button id="newBtn" title="Capture a screen region">✂&nbsp; New capture</button>
+  <div id="hint">or press <b>Ctrl+Shift+4</b> anywhere</div>
+  <div id="status"></div>
+  <div id="foot"><span id="ver">v0.1.0</span><button id="quit">Quit</button></div>
+</div>
+<script type="module" src="/src/main.ts"></script>
+</body>
 </html>
