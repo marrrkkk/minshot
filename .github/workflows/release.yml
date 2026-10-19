@@ -1,0 +1,36 @@
+name: Release
+
+# A tag cuts a release: the installer and the portable exe are attached to
+# the GitHub Release of that tag.
+on:
+  push:
+    tags: ["v*"]
+
+permissions:
+  contents: write
+
+jobs:
+  release:
+    runs-on: windows-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+      - uses: dtolnay/rust-toolchain@stable
+      - run: npm ci
+      # The tag, package.json, Cargo.toml and tauri.conf.json must agree,
+      # or the installer gets the wrong version in its file name.
+      - run: node scripts/check-version.mjs ${{ github.ref_name }}
+      - uses: tauri-apps/tauri-action@v0
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          tagName: ${{ github.ref_name }}
+          releaseName: minshot ${{ github.ref_name }}
+          releaseBody: Download the installer below, run it, and press Ctrl+Shift+4.
+          releaseDraft: false
+          prerelease: false
+          generateReleaseNotes: true
+          includeUpdaterJson: false
+          uploadPlainBinary: true

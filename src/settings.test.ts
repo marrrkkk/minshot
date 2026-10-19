@@ -16,8 +16,8 @@ test("no folder means the temp folder", () => {
 });
 
 test("the row shows the name of the folder, not the whole path", () => {
-  assert.equal(saveDirLabel("C:\\Users\\Mark\\Pictures"), "Pictures");
-  assert.equal(saveDirLabel("C:/Users/Mark/Pictures"), "Pictures");
+  assert.equal(saveDirLabel("C:\\Users\\Someone\\Pictures"), "Pictures");
+  assert.equal(saveDirLabel("C:/Users/Someone/Pictures"), "Pictures");
 });
 
 test("a folder that is only a drive letter still shows something", () => {
@@ -34,8 +34,8 @@ test("the temp folder has no reset button", () => {
 
 test("a chosen folder shows its name and can be reset", () => {
   const { els } = fakeEls();
-  renderSaveDir(els, "C:\\Users\\Mark\\Pictures");
+  renderSaveDir(els, "C:\\Users\\Someone\\Pictures");
   assert.equal(els.dir.textContent, "Pictures");
   assert.equal(els.reset.hidden, false);
-  assert.match(els.dir.title, /C:\\Users\\Mark\\Pictures/);
+  assert.match(els.dir.title, /C:\\Users\\Someone\\Pictures/);
 });

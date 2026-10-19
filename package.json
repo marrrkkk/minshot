@@ -2,12 +2,27 @@
   "name": "minshot",
   "private": true,
   "version": "0.1.0",
+  "description": "Minimal Windows screenshot-to-terminal utility",
+  "license": "MIT",
+  "author": "marrrkkk <marklouie.dev@gmail.com>",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/marrrkkk/minshot.git"
+  },
+  "homepage": "https://github.com/marrrkkk/minshot#readme",
+  "bugs": {
+    "url": "https://github.com/marrrkkk/minshot/issues"
+  },
+  "engines": {
+    "node": ">=20"
+  },
   "type": "module",
   "scripts": {
     "dev": "vite",
     "build": "tsc && vite build",
     "preview": "vite preview",
     "test": "node --test \"src/*.test.ts\"",
+    "check:version": "node scripts/check-version.mjs",
     "tauri": "tauri"
   },
   "devDependencies": {

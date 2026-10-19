@@ -20,7 +20,7 @@ jobs:
         run: rustup default stable-x86_64-pc-windows-msvc
       - run: cargo fmt --manifest-path src-tauri/Cargo.toml -- --check
       - run: cargo clippy --manifest-path src-tauri/Cargo.toml --all-targets
-      # The 3 hardware tests (screen capture, clipboard) need a desktop
-      # session and are marked #[ignore]; run them locally with
+      # The hardware tests (screen capture, clipboard, folder picker) need a
+      # desktop session and are marked #[ignore]; run them locally with
       # `cargo test -- --include-ignored`.
       - run: cargo test --manifest-path src-tauri/Cargo.toml

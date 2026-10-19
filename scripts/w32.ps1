@@ -25,6 +25,8 @@ public static class W32 {
     return list;
   }
   public static void MoveAbs(int x, int y) {
+    // The absolute mouse position is scaled to the screen: 65535 = full width.
+    // Shortcut: 1920x1080 is hardcoded, so the harness only drives that size.
     int nx = (int)(x * 65535.0 / 1920.0), ny = (int)(y * 65535.0 / 1080.0);
     mouse_event(MOVE | ABS, nx, ny, 0, UIntPtr.Zero);
   }
