@@ -81,7 +81,13 @@ The Rust tests that need a real desktop (screen capture, the clipboard, the fold
 cargo test --manifest-path src-tauri/Cargo.toml -- --include-ignored
 ```
 
-`scripts/drive.ps1` drives the running app from the command line (trigger the shortcut, drag a region, screenshot the window) — the manual test harness for the behaviours CI cannot check. `scripts/screen.ps1` takes a picture of the whole screen and `scripts/compare.ps1` puts two pictures side by side, pixel by pixel: that is how you check that a capture comes out exactly as the screen looked, with no dim in it.
+The dev harness in `scripts/` drives the running app and checks what it did:
+
+- `drive.ps1` — trigger the shortcut, drag a region, screenshot the window.
+- `windowshot.ps1` — a picture of one window.
+- `screen.ps1` — a picture of the whole screen.
+- `compare.ps1` — two pictures side by side, pixel by pixel. This is how you check that a capture comes out exactly as the screen looked, with no dim in it.
+- `startup.ps1` — watch the window from the moment the process starts: when it appears, and whether it ever moves afterwards.
 
 ## Known limits
 
