@@ -25,8 +25,8 @@ mod imp {
                 Com::*,
                 Memory::*,
                 Ole::{
-                    DoDragDrop, OleInitialize, OleUninitialize, CF_HDROP, DROPEFFECT,
-                    DROPEFFECT_COPY, IDropSource, IDropSource_Impl,
+                    DoDragDrop, IDropSource, IDropSource_Impl, OleInitialize, OleUninitialize,
+                    CF_HDROP, DROPEFFECT, DROPEFFECT_COPY,
                 },
                 SystemServices::{MK_LBUTTON, MODIFIERKEYS_FLAGS},
             },
@@ -95,11 +95,7 @@ mod imp {
                     let _ = GlobalFree(Some(handle));
                     return Err(Error::new(E_FAIL, "GlobalLock returned null"));
                 }
-                std::ptr::copy_nonoverlapping(
-                    self.payload.as_ptr(),
-                    ptr,
-                    self.payload.len(),
-                );
+                std::ptr::copy_nonoverlapping(self.payload.as_ptr(), ptr, self.payload.len());
                 let _ = GlobalUnlock(handle);
                 Ok(handle)
             }
@@ -131,7 +127,11 @@ mod imp {
             })
         }
 
-        fn GetDataHere(&self, _pformatetc: *const FORMATETC, _pmedium: *mut STGMEDIUM) -> Result<()> {
+        fn GetDataHere(
+            &self,
+            _pformatetc: *const FORMATETC,
+            _pmedium: *mut STGMEDIUM,
+        ) -> Result<()> {
             Err(Error::new(E_NOTIMPL, "not implemented"))
         }
 
@@ -167,13 +167,11 @@ mod imp {
             if dwdirection != DATADIR_GET.0 as u32 {
                 return Err(Error::new(E_NOTIMPL, "not implemented"));
             }
-            Ok(
-                ComObject::new(FormatEtcEnumerator {
-                    items: vec![FileDropData::hdrop_format()],
-                    index: Mutex::new(0),
-                })
-                .to_interface(),
-            )
+            Ok(ComObject::new(FormatEtcEnumerator {
+                items: vec![FileDropData::hdrop_format()],
+                index: Mutex::new(0),
+            })
+            .to_interface())
         }
 
         fn DAdvise(
@@ -202,12 +200,7 @@ mod imp {
 
     #[allow(non_snake_case)]
     impl IEnumFORMATETC_Impl for FormatEtcEnumerator_Impl {
-        fn Next(
-            &self,
-            celt: u32,
-            rgelt: *mut FORMATETC,
-            pceltfetched: *mut u32,
-        ) -> HRESULT {
+        fn Next(&self, celt: u32, rgelt: *mut FORMATETC, pceltfetched: *mut u32) -> HRESULT {
             let mut index = match self.index.lock() {
                 Ok(g) => g,
                 Err(_) => return E_FAIL,
@@ -236,7 +229,10 @@ mod imp {
         }
 
         fn Skip(&self, celt: u32) -> Result<()> {
-            let mut index = self.index.lock().map_err(|_| Error::new(E_FAIL, "lock failed"))?;
+            let mut index = self
+                .index
+                .lock()
+                .map_err(|_| Error::new(E_FAIL, "lock failed"))?;
             *index = (*index + celt as usize).min(self.items.len());
             if *index < self.items.len() {
                 Ok(())
@@ -257,7 +253,10 @@ mod imp {
         }
 
         fn Clone(&self) -> Result<IEnumFORMATETC> {
-            let index = *self.index.lock().map_err(|_| Error::new(E_FAIL, "lock failed"))?;
+            let index = *self
+                .index
+                .lock()
+                .map_err(|_| Error::new(E_FAIL, "lock failed"))?;
             Ok(ComObject::new(FormatEtcEnumerator {
                 items: self.items.clone(),
                 index: Mutex::new(index),
@@ -355,8 +354,7 @@ mod tests {
     /// pFiles=20, fWide=1, followed by NUL-terminated UTF-16 paths + final NUL.
     #[test]
     fn dropfiles_payload_layout() {
-        let payload =
-            dropfiles_payload_for(&[PathBuf::from(r"C:\Temp\minshot-a.png")]);
+        let payload = dropfiles_payload_for(&[PathBuf::from(r"C:\Temp\minshot-a.png")]);
         assert!(payload.len() > 20);
         let p_files = u32::from_le_bytes(payload[0..4].try_into().unwrap());
         assert_eq!(p_files, 20);
