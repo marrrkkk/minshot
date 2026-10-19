@@ -1,0 +1,26 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+jobs:
+  test:
+    runs-on: windows-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+      - run: npm ci
+      - run: npm test
+      - run: npm run build
+      - name: Install Rust (MSVC)
+        run: rustup default stable-x86_64-pc-windows-msvc
+      - run: cargo fmt --manifest-path src-tauri/Cargo.toml -- --check
+      - run: cargo clippy --manifest-path src-tauri/Cargo.toml --all-targets
+      # The 3 hardware tests (screen capture, clipboard) need a desktop
+      # session and are marked #[ignore]; run them locally with
+      # `cargo test -- --include-ignored`.
+      - run: cargo test --manifest-path src-tauri/Cargo.toml
