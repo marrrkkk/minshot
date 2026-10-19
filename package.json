@@ -1,7 +1,7 @@
 {
   "name": "minshot",
   "private": true,
-  "version": "0.2.0",
+  "version": "0.3.0",
   "description": "Minimal Windows screenshot-to-terminal utility",
   "license": "MIT",
   "author": "marrrkkk <marklouie.dev@gmail.com>",
