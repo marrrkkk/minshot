@@ -1,45 +1,42 @@
 import { invoke } from "@tauri-apps/api/core";
+import { Selection, type Rect } from "./selection.ts";
 
 const sel = document.getElementById("sel") as HTMLDivElement;
-let startX = 0, startY = 0, dragging = false;
+const selection = new Selection();
 
-function showRect(x0: number, y0: number, x1: number, y1: number) {
-  const x = Math.min(x0, x1), y = Math.min(y0, y1);
-  const w = Math.abs(x1 - x0), h = Math.abs(y1 - y0);
+function showRect(r: Rect) {
   sel.style.display = "block";
-  sel.style.left = `${x}px`;
-  sel.style.top = `${y}px`;
-  sel.style.width = `${w}px`;
-  sel.style.height = `${h}px`;
+  sel.style.left = `${r.x}px`;
+  sel.style.top = `${r.y}px`;
+  sel.style.width = `${r.w}px`;
+  sel.style.height = `${r.h}px`;
 }
 
 window.addEventListener("mousedown", (e) => {
   if (e.button !== 0) return;
-  dragging = true;
-  startX = e.clientX; startY = e.clientY;
-  showRect(startX, startY, startX, startY);
+  selection.begin(e.clientX, e.clientY);
+  const r = selection.update(e.clientX, e.clientY);
+  if (r) showRect(r);
 });
 
 window.addEventListener("mousemove", (e) => {
-  if (!dragging) return;
-  showRect(startX, startY, e.clientX, e.clientY);
+  const r = selection.update(e.clientX, e.clientY);
+  if (r) showRect(r);
 });
 
 window.addEventListener("mouseup", async (e) => {
-  if (!dragging) return;
-  dragging = false;
+  const r = selection.end(e.clientX, e.clientY);
   sel.style.display = "none";
-  const x = Math.min(startX, e.clientX);
-  const y = Math.min(startY, e.clientY);
-  const w = Math.abs(e.clientX - startX);
-  const h = Math.abs(e.clientY - startY);
-  if (w < 4 || h < 4) {
+  if (!r) {
     await cancelCapture();
     return;
   }
   try {
     await invoke("capture_region", {
-      x, y, w, h,
+      x: r.x,
+      y: r.y,
+      w: r.w,
+      h: r.h,
       scale: window.devicePixelRatio || 1,
     });
   } catch (err) {
@@ -51,6 +48,9 @@ window.addEventListener("mouseup", async (e) => {
 /// Dismiss the overlay and bring the main window back (it hides during
 /// selection so it never covers the target area).
 async function cancelCapture() {
+  // Drop the drag: without this the mouseup that follows an Escape would
+  // still capture the region the user just cancelled.
+  selection.cancel();
   await invoke("hide_overlay");
   await invoke("show_main");
 }

@@ -21,16 +21,18 @@
   .appHead .spacer { flex: 1; }
   #homeView .newBtn { margin-top: 1rem; }
   .shortcutRow { margin-top: 0.625rem; font-size: 0.75rem; text-align: center; }
+  .warn { margin-top: 0.625rem; font-size: 0.75rem; color: #f59e0b; }
   .foot { display: flex; justify-content: flex-end; align-items: center; margin-top: 0.375rem; }
 
   #shotView { padding: 0.625rem; box-sizing: border-box; }
-  #shotCard { transition: transform 0.15s ease, box-shadow 0.15s ease; }
+  #shotCard { width: max-content; transition: transform 0.15s ease, box-shadow 0.15s ease; }
   #metaBar { display: flex; align-items: center; gap: 0.5rem; padding: 0.375rem 0.5rem;
     font-size: 0.75rem; }
   #metaBar .dot { width: 0.5rem; height: 0.5rem; border-radius: 50%; background: #4ade80; flex: none; }
   #metaBar .spacer { flex: 1; }
-  #imgwrap { position: relative; line-height: 0; }
-  #shot { display: block; width: 100%; height: auto; cursor: grab; }
+  #imgwrap { position: relative; line-height: 0; display: flex; justify-content: center; }
+  /* The image size is set by the app (fit to the window), not by CSS. */
+  #shot { display: block; cursor: grab; }
   #shot:active { cursor: grabbing; }
   #dropHint { display: none; position: absolute; left: 50%; top: 50%; transform: translate(-50%,-50%);
     background: rgba(0,0,0,0.72); border: 1.5px dashed var(--primary); color: #fff;
@@ -61,6 +63,7 @@
   </div>
   <button class="btn btn-primary btn-block newBtn" title="Capture a screen region">＋ New capture</button>
   <div class="shortcutRow muted">or press <span class="kbd">Ctrl</span><span class="kbd">Shift</span><span class="kbd">4</span> anywhere</div>
+  <div id="warn" class="warn hidden"></div>
   <div class="foot"><span class="ver">PNG · auto-copy · no history</span></div>
   </div>
 </div>

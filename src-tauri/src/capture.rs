@@ -15,7 +15,17 @@ use image::ImageEncoder;
 pub struct Captured {
     pub width: u32,
     pub height: u32,
-    pub png_bytes: Vec<u8>,
+    /// The captured pixels, RGBA — what the clipboard wants.
+    pub rgba: Vec<u8>,
+}
+
+/// Encode RGBA pixels as a PNG.
+pub fn encode_png(rgba: &[u8], width: u32, height: u32) -> Result<Vec<u8>, String> {
+    let mut png_bytes = Vec::new();
+    image::codecs::png::PngEncoder::new(&mut png_bytes)
+        .write_image(rgba, width, height, image::ExtendedColorType::Rgba8)
+        .map_err(|e| format!("PNG encode failed: {e}"))?;
+    Ok(png_bytes)
 }
 
 /// Normalize a drag rect. Returns `None` for zero/tiny selections (a click,
@@ -55,8 +65,8 @@ pub fn capture_css_rect(x: f64, y: f64, w: f64, h: f64, scale: f64) -> Result<Ca
 pub fn capture_physical_rect(x: i32, y: i32, w: u32, h: u32) -> Result<Captured, String> {
     let cx = x + (w / 2) as i32;
     let cy = y + (h / 2) as i32;
-    let monitor = xcap::Monitor::from_point(cx, cy)
-        .map_err(|e| format!("no monitor at ({cx},{cy}): {e}"))?;
+    let monitor =
+        xcap::Monitor::from_point(cx, cy).map_err(|e| format!("no monitor at ({cx},{cy}): {e}"))?;
     let mx = monitor.x().map_err(|e| format!("monitor x failed: {e}"))?;
     let my = monitor.y().map_err(|e| format!("monitor y failed: {e}"))?;
     let mw = monitor
@@ -85,15 +95,12 @@ pub fn capture_physical_rect(x: i32, y: i32, w: u32, h: u32) -> Result<Captured,
         .map_err(|e| format!("screen capture failed: {e}"))?;
 
     let (cw, ch) = (img.width(), img.height());
-    let mut png_bytes = Vec::new();
-    image::codecs::png::PngEncoder::new(&mut png_bytes)
-        .write_image(img.as_raw(), cw, ch, image::ExtendedColorType::Rgba8)
-        .map_err(|e| format!("PNG encode failed: {e}"))?;
+    let rgba = img.into_raw();
 
     Ok(Captured {
         width: cw,
         height: ch,
-        png_bytes,
+        rgba,
     })
 }
 
@@ -103,7 +110,10 @@ mod tests {
 
     #[test]
     fn rect_normalizes_inverted_drag() {
-        assert_eq!(normalize_rect(100.0, 100.0, 10.0, 20.0), Some((10, 20, 90, 80)));
+        assert_eq!(
+            normalize_rect(100.0, 100.0, 10.0, 20.0),
+            Some((10, 20, 90, 80))
+        );
     }
 
     #[test]
@@ -115,15 +125,38 @@ mod tests {
 
     #[test]
     fn rect_rounds_to_whole_pixels() {
-        assert_eq!(normalize_rect(10.4, 20.6, 100.4, 200.6), Some((10, 21, 90, 180)));
+        assert_eq!(
+            normalize_rect(10.4, 20.6, 100.4, 200.6),
+            Some((10, 21, 90, 180))
+        );
     }
 
     /// Hits the real screen (DXGI) — verifies xcap + crop + PNG encode on hardware.
+    /// Needs a desktop session, so it is skipped in CI:
+    /// `cargo test -- --include-ignored` runs it.
     #[test]
+    #[ignore = "needs a desktop session"]
     fn smoke_capture_real_screen() {
         let cap = capture_physical_rect(10, 10, 64, 64).expect("screen capture failed");
         assert_eq!((cap.width, cap.height), (64, 64));
-        assert!(cap.png_bytes.len() > 100);
-        assert_eq!(&cap.png_bytes[0..8], &[137, 80, 78, 71, 13, 10, 26, 10]);
+        assert_eq!(cap.rgba.len(), 64 * 64 * 4);
+        let png = encode_png(&cap.rgba, cap.width, cap.height).expect("PNG encode failed");
+        assert!(png.len() > 100);
+        assert_eq!(&png[0..8], &[137, 80, 78, 71, 13, 10, 26, 10]);
+    }
+
+    /// The capture runs on a runtime worker (the command is async), so it
+    /// must work off the UI thread too.
+    #[test]
+    #[ignore = "needs a desktop session"]
+    fn capture_works_off_the_main_thread() {
+        let result = std::thread::spawn(|| capture_physical_rect(10, 10, 64, 64))
+            .join()
+            .expect("capture thread panicked");
+        assert!(
+            result.is_ok(),
+            "capture off the main thread failed: {:?}",
+            result.err()
+        );
     }
 }

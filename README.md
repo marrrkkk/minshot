@@ -25,11 +25,14 @@ Honest summary: **drag = file path that OpenCode upgrades to an image; paste = a
 | Behavior | Status | Evidence |
 |---|---|---|
 | `Ctrl+Shift+4` shows fullscreen overlay, main hides / `Esc` cancels and restores main, no stray files | ✅ verified | Drove the running app via shortcut + key events; overlay fullscreen, main hidden during selection, main back after `Esc`, temp dir untouched |
+| `Esc` **during** a drag cancels it (no capture) | ✅ verified | Drag → `Esc` → release: no PNG written, main window restored, overlay hidden |
 | Pixel-accurate region capture | ✅ verified | 400×300 drag → 400×300 PNG, valid PNG magic; real-screen unit test passes |
-| Single window becomes the shot view, sized to fit | ✅ verified | Main window reappears at captured aspect after every capture; exact-fit resize confirmed numerically |
+| Single window becomes the shot view, sized to fit | ✅ verified | The shot is drawn 1:1 (scaled down only past 840×600) and the window resizes to it: an 800×90 shot → an 838 px window, a 200×900 shot → the whole capture visible at 133×600 (before: capped at 358 px wide, tall shots cut off) |
+| The footer does not grow across captures | ✅ verified | Three captures in a row → one `✓ Copied`, not three |
 | Main-window ✂ New capture button (home + shot views) | ✅ verified | Real clicks on both buttons opened the overlay |
-| New capture replaces old (no history) | ✅ verified | Temp dir holds exactly 1 PNG after consecutive captures; old file deleted |
+| New capture replaces old (no history) | ✅ verified | Temp dir holds exactly 1 PNG after consecutive captures; old file deleted (unit test + live run) |
 | Clipboard auto-copy (`Ctrl+V` source) | ✅ verified | `Clipboard.ContainsImage()` true after capture; clipboard round-trip unit test passes |
+| The app stays responsive while capturing | ✅ verified | The capture runs on a runtime thread, not the UI thread (the command is `async`); a 4K capture no longer freezes the tray and the shortcut |
 | Multi-monitor virtual-screen overlay | ⚠️ implemented, single-monitor verified | Overlay spans `GetSystemMetrics` virtual screen; capture clamps to the monitor holding the selection; only one display available to test |
 | Native file drag (CF_HDROP `DoDragDrop`) | ⚠️ implemented, initiation + data verified; drop arrival unverified here | `DoDragDrop` runs, targets probe `CF_HDROP` (`QueryGetData`/`GetData` served live), HDROP payload layout unit-tested; but synthetic mouse input does not steer OLE drop targeting in this sandbox (even native Notepad→test-target drags reach nothing), so no target-side arrival could be observed. On a real desktop the OS routes the drop normally. Fast-click guard prevents starting a drag after button release, so the app cannot wedge. |
 | Drop into Windows Terminal / OpenCode TUI | ❌ not tested here | No terminal automation available; relies on OpenCode's documented dropped-path→attachment behavior. If your terminal only inserts the path as text, use `Ctrl+V` (verified path). |
@@ -54,18 +57,25 @@ Honest summary: **drag = file path that OpenCode upgrades to an image; paste = a
 npm install
 npm run tauri dev      # run with hot reload
 npm run tauri build    # → src-tauri/target/release/bundle/ (NSIS installer + portable exe)
-cargo test --manifest-path src-tauri/Cargo.toml   # 8 unit tests (rect math, temp names, HDROP layout, clipboard + screen smoke)
+npm test               # frontend tests (node --test, no dependencies)
+cargo test --manifest-path src-tauri/Cargo.toml   # 9 unit tests (rect math, temp names, HDROP layout, capture state)
+cargo test --manifest-path src-tauri/Cargo.toml -- --include-ignored   # + the 3 hardware tests (screen, clipboard, off-thread capture)
 ```
+
+The frontend tests run on plain Node (`node --test`, no test framework, no
+dependencies). The 3 hardware tests need a desktop session and are skipped
+by default so CI stays green — run them with `--include-ignored`.
 
 First `dev`/`build` compiles all Rust deps (one-time, several minutes).
 
 ## Use
 
-- Open the **minshot window** and click **＋ New capture**, or press `Ctrl+Shift+4` anywhere (the window hides during selection). Drag a rectangle → the window returns showing your screenshot, auto-fitted. `Esc`/click cancels and brings the window back.
+- Open the **minshot window** and click **＋ New capture**, or press `Ctrl+Shift+4` anywhere (the window hides during selection). Drag a rectangle → the window returns showing your screenshot, scaled to fit the window. `Esc`/click cancels and brings the window back.
 - **Drag the screenshot** into Windows Terminal / OpenCode → path is inserted and attached as an image. While held, it shrinks with a drop hint.
 - **`Ctrl+V`** where images are accepted → pastes the screenshot (no save step; PNG, auto-copied on capture). **⧉ Copy** re-copies it if the clipboard moved on.
 - UI follows the OS light/dark theme (shadcn zinc tokens, no frameworks or extra deps).
 - Drag the window by its header bars. **Closing the window (×), Quit buttons, or tray Quit all quit the app** and remove temp files. Temp files live in `%TEMP%\minshot\` with unique names, replaced per capture, stale ones (>24h) pruned at startup, all removed on exit.
+- If `Ctrl+Shift+4` is already taken by another app, the window says so and you capture from the tray menu instead.
 
 ## Limitations (verified or by design)
 

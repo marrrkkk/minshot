@@ -6,20 +6,32 @@
 
 mod capture;
 mod clipboard_img;
+mod last;
 mod tempfiles;
 mod win;
 
 use std::sync::Mutex;
 use tauri::{AppHandle, Emitter, Manager, RunEvent, WebviewWindow};
 
-struct LastCapture {
-    path: std::path::PathBuf,
-    png: Vec<u8>,
+use last::CaptureState;
+
+/// App-level status the frontend asks about at startup.
+#[derive(Default)]
+struct AppStatus {
+    shortcut_error: Mutex<Option<String>>,
 }
 
-#[derive(Default)]
-struct AppState {
-    last: Mutex<Option<LastCapture>>,
+impl AppStatus {
+    fn set_shortcut_error(&self, msg: String) {
+        *self.shortcut_error.lock().expect("app status poisoned") = Some(msg);
+    }
+
+    fn shortcut_error(&self) -> Option<String> {
+        self.shortcut_error
+            .lock()
+            .expect("app status poisoned")
+            .clone()
+    }
 }
 
 fn overlay_window(app: &AppHandle) -> Result<WebviewWindow, String> {
@@ -42,7 +54,10 @@ fn show_overlay_inner(app: &AppHandle) -> Result<(), String> {
     // Span the whole virtual screen so every monitor is selectable.
     let (vx, vy, vw, vh) = win::virtual_screen_rect();
     overlay
-        .set_position(tauri::Position::Physical(tauri::PhysicalPosition { x: vx, y: vy }))
+        .set_position(tauri::Position::Physical(tauri::PhysicalPosition {
+            x: vx,
+            y: vy,
+        }))
         .map_err(|e| e.to_string())?;
     overlay
         .set_size(tauri::Size::Physical(tauri::PhysicalSize {
@@ -83,15 +98,20 @@ fn quit_app(app: AppHandle) {
 }
 
 #[tauri::command]
-fn copy_to_clipboard(state: tauri::State<'_, AppState>) -> Result<(), String> {
-    let png = {
-        let guard = state.last.lock().map_err(|e| e.to_string())?;
-        guard
-            .as_ref()
-            .map(|l| l.png.clone())
-            .ok_or_else(|| "no capture yet".to_string())?
-    };
-    clipboard_img::copy_png_to_clipboard(&png)
+fn copy_to_clipboard(state: tauri::State<'_, CaptureState>) -> Result<(), String> {
+    // The lock is held while the pixels are copied out: no clone of the
+    // capture needed.
+    state.with(|last| {
+        let last = last.ok_or("no capture yet")?;
+        clipboard_img::copy_rgba_to_clipboard(&last.rgba, last.width, last.height)
+    })
+}
+
+/// The global shortcut could not be registered (another app has it). The
+/// frontend asks for this at startup and warns the user.
+#[tauri::command]
+fn shortcut_error(status: tauri::State<'_, AppStatus>) -> Option<String> {
+    status.shortcut_error()
 }
 
 /// Resize the main window to exactly fit its rendered content (logical px,
@@ -99,8 +119,9 @@ fn copy_to_clipboard(state: tauri::State<'_, AppState>) -> Result<(), String> {
 /// the bottom" class of bugs: the window is only ever as tall as its content.
 #[tauri::command]
 fn fit_main(app: AppHandle, width: f64, height: f64) -> Result<(), String> {
-    let w = width.max(200.0).min(900.0);
-    let h = height.max(120.0).min(800.0);
+    // The lower bound keeps the action row (New capture / Copy) usable.
+    let w = width.clamp(300.0, 900.0);
+    let h = height.clamp(120.0, 800.0);
     main_window(&app)?
         .set_size(tauri::Size::Logical(tauri::LogicalSize {
             width: w,
@@ -109,16 +130,21 @@ fn fit_main(app: AppHandle, width: f64, height: f64) -> Result<(), String> {
         .map_err(|e| e.to_string())
 }
 
-#[tauri::command]
+/// Take a region screenshot.
+///
+/// `async` so the work happens on a runtime thread, not on the UI thread:
+/// a 4K capture takes a while to grab and encode, and the app must stay
+/// responsive (tray, shortcut) while it does.
+#[tauri::command(async)]
 fn capture_region(
     app: AppHandle,
-    state: tauri::State<'_, AppState>,
+    state: tauri::State<'_, CaptureState>,
     x: f64,
     y: f64,
     w: f64,
     h: f64,
     scale: f64,
-) -> Result<serde_json::Value, String> {
+) -> Result<(), String> {
     // Hide the overlay first so the dim layer is not part of the screenshot,
     // and give the compositor a beat to redraw without it.
     if let Ok(overlay) = overlay_window(&app) {
@@ -128,25 +154,25 @@ fn capture_region(
     std::thread::sleep(std::time::Duration::from_millis(180));
 
     let cap = capture::capture_css_rect(x, y, w, h, scale)?;
+    let png = capture::encode_png(&cap.rgba, cap.width, cap.height)?;
 
     // Temp PNG (created only because file-drag integrations need a path).
     tempfiles::ensure_dir().map_err(|e| format!("temp dir failed: {e}"))?;
     let path = tempfiles::unique_png_path();
-    std::fs::write(&path, &cap.png_bytes).map_err(|e| format!("write temp PNG failed: {e}"))?;
+    std::fs::write(&path, &png).map_err(|e| format!("write temp PNG failed: {e}"))?;
 
     // Clipboard copy is the primary terminal workflow (Ctrl+V in OpenCode).
     // Best effort: a clipboard failure must not lose the capture.
-    let clipboard_ok = clipboard_img::copy_png_to_clipboard(&cap.png_bytes).is_ok();
+    let clipboard_ok =
+        clipboard_img::copy_rgba_to_clipboard(&cap.rgba, cap.width, cap.height).is_ok();
 
-    // Replace the previous capture (no history).
-    if let Ok(mut guard) = state.last.lock() {
-        if let Some(old) = guard.replace(LastCapture {
-            path: path.clone(),
-            png: cap.png_bytes.clone(),
-        }) {
-            tempfiles::remove_file_silent(&old.path);
-        }
-    }
+    // Replace the previous capture (no history); the old temp file goes.
+    state.replace(last::LastCapture {
+        path: path.clone(),
+        rgba: cap.rgba,
+        width: cap.width,
+        height: cap.height,
+    });
 
     // Single-window UX: the main window reappears as the screenshot view.
     // No focus steal — the user is usually headed back to the terminal to
@@ -167,29 +193,20 @@ fn capture_region(
     )
     .map_err(|e| e.to_string())?;
 
-    Ok(serde_json::json!({
-        "width": cap.width,
-        "height": cap.height,
-        "path": path.to_string_lossy(),
-        "clipboard": clipboard_ok,
-    }))
+    Ok(())
 }
 
 #[tauri::command]
-fn start_native_drag(
-    app: AppHandle,
-    state: tauri::State<'_, AppState>,
-) -> Result<(), String> {
-    let (path, png) = {
-        let guard = state.last.lock().map_err(|e| e.to_string())?;
-        guard
-            .as_ref()
-            .map(|l| (l.path.clone(), l.png.clone()))
-            .ok_or_else(|| "no capture yet".to_string())?
-    };
+fn start_native_drag(app: AppHandle, state: tauri::State<'_, CaptureState>) -> Result<(), String> {
+    let path = state.with(|last| last.ok_or("no capture yet").map(|l| l.path.clone()))?;
     if !path.is_file() {
-        // Temp file lost after capture (external cleaners, AV): recreate it
-        // from the in-memory bytes so the drag still works.
+        // Temp file lost after capture (external cleaners, AV): rebuild it
+        // from the pixels we still hold.
+        let (rgba, width, height) = state.with(|last| {
+            let last = last.ok_or("no capture yet")?;
+            Ok::<_, String>((last.rgba.clone(), last.width, last.height))
+        })?;
+        let png = capture::encode_png(&rgba, width, height)?;
         tempfiles::ensure_dir().map_err(|e| format!("temp dir failed: {e}"))?;
         std::fs::write(&path, &png).map_err(|e| format!("rewrite temp PNG failed: {e}"))?;
     }
@@ -200,7 +217,9 @@ fn start_native_drag(
 pub fn run() {
     tempfiles::cleanup_stale(24 * 3600);
 
-    let mut builder = tauri::Builder::default().manage(AppState::default());
+    let mut builder = tauri::Builder::default()
+        .manage(CaptureState::default())
+        .manage(AppStatus::default());
 
     #[cfg(desktop)]
     {
@@ -223,20 +242,20 @@ pub fn run() {
             {
                 use tauri_plugin_global_shortcut::GlobalShortcutExt;
                 // Preferred shortcut. If it collides, capture is still
-                // available from the tray menu.
+                // available from the tray menu — but the user has to know,
+                // so the error is shown in the window.
                 if let Err(e) = app.global_shortcut().register("Ctrl+Shift+4") {
                     eprintln!("[minshot] shortcut register failed: {e}");
+                    app.state::<AppStatus>().set_shortcut_error(e.to_string());
                 }
             }
 
             // Minimal tray: Open + Capture + Quit.
             use tauri::menu::{IsMenuItem, Menu, MenuItem};
-            let open_item =
-                MenuItem::with_id(app, "open", "Open minshot", true, None::<&str>)?;
+            let open_item = MenuItem::with_id(app, "open", "Open minshot", true, None::<&str>)?;
             let capture_item =
                 MenuItem::with_id(app, "capture", "Capture region", true, None::<&str>)?;
-            let quit_item =
-                MenuItem::with_id(app, "quit", "Quit minshot", true, None::<&str>)?;
+            let quit_item = MenuItem::with_id(app, "quit", "Quit minshot", true, None::<&str>)?;
             let menu = Menu::with_items(
                 app,
                 &[
@@ -280,6 +299,7 @@ pub fn run() {
             show_main,
             quit_app,
             copy_to_clipboard,
+            shortcut_error,
             fit_main,
             hide_overlay,
             capture_region,

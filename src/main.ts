@@ -1,5 +1,6 @@
 import { convertFileSrc, invoke } from "@tauri-apps/api/core";
 import { listen } from "@tauri-apps/api/event";
+import { renderShot, type ShotEls } from "./shot.ts";
 
 const homeView = document.getElementById("homeView") as HTMLDivElement;
 const shotView = document.getElementById("shotView") as HTMLDivElement;
@@ -9,14 +10,26 @@ const dims = document.getElementById("dims") as HTMLSpanElement;
 const foot = document.getElementById("shotFoot") as HTMLDivElement;
 const homeInner = document.getElementById("homeInner") as HTMLDivElement;
 
+const els: ShotEls = { img, dims, foot, homeView, shotView };
+
+// The Windows title bar is not part of the webview, so the window has to
+// be that much taller than the content it shows.
+const TITLE_BAR = 32;
+
+function fitWindow(width: number, height: number) {
+  void invoke("fit_main", { width, height }).catch((err) =>
+    console.error("fit window failed", err),
+  );
+}
+
 // Size the window to exactly fit the home content on startup, so the footer
 // (Quit) can never end up clipped below the fold. Same mechanism as shots.
 function fitHome() {
   requestAnimationFrame(() => {
-    void invoke("fit_main", {
-      width: document.documentElement.clientWidth,
-      height: homeInner.offsetHeight + 32,
-    }).catch((err) => console.error("fit window failed", err));
+    fitWindow(
+      document.documentElement.clientWidth,
+      homeInner.offsetHeight + TITLE_BAR,
+    );
   });
 }
 if (document.readyState === "loading") {
@@ -49,15 +62,26 @@ document.querySelectorAll(".copyBtn").forEach((b) =>
   }),
 );
 
+// The global shortcut may be taken by another app. Say so instead of
+// leaving the user wondering why nothing happens.
+void invoke<string | null>("shortcut_error").then((err) => {
+  if (!err) return;
+  const warn = document.getElementById("warn") as HTMLDivElement;
+  warn.textContent =
+    "Ctrl+Shift+4 is taken by another app — capture from the tray menu instead.";
+  warn.classList.remove("hidden");
+});
+
 // A capture turns the main window into the screenshot view.
 listen<{ path: string; width: number; height: number; clipboard: boolean }>(
   "capture-ready",
   (e) => {
-    img.src = convertFileSrc(e.payload.path);
-    dims.textContent = `${e.payload.width}×${e.payload.height}`;
-    foot.textContent += e.payload.clipboard ? " ✓ Copied" : " Copy failed — press ⧉ Copy.";
-    homeView.classList.add("hidden");
-    shotView.classList.remove("hidden");
+    renderShot(els, {
+      src: convertFileSrc(e.payload.path),
+      width: e.payload.width,
+      height: e.payload.height,
+      clipboard: e.payload.clipboard,
+    });
   },
 );
 
@@ -66,10 +90,9 @@ listen<{ path: string; width: number; height: number; clipboard: boolean }>(
 img.addEventListener("load", () => {
   requestAnimationFrame(() => {
     if (img.naturalWidth === 0) return;
-    void invoke("fit_main", {
-      width: document.documentElement.clientWidth,
-      height: shotView.offsetHeight,
-    }).catch((err) => console.error("fit window failed", err));
+    const pad = getComputedStyle(shotView);
+    const chrome = parseFloat(pad.paddingLeft) + parseFloat(pad.paddingRight);
+    fitWindow(shotCard.offsetWidth + chrome, shotView.offsetHeight + TITLE_BAR);
   });
 });
 
