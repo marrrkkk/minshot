@@ -14,7 +14,7 @@
     "url": "https://github.com/marrrkkk/minshot/issues"
   },
   "engines": {
-    "node": ">=20"
+    "node": ">=22.18"
   },
   "type": "module",
   "scripts": {

@@ -39,7 +39,7 @@ In short: **drag = a file path that OpenCode upgrades to an image; paste = the i
 
 ## Build from source
 
-You need Windows 11, [Node 20+](https://nodejs.org), [Rust stable (MSVC)](https://rustup.rs) and the Visual Studio 2022 Build Tools with the **VCTools** workload:
+You need Windows 11, [Node 22.18+](https://nodejs.org), [Rust stable (MSVC)](https://rustup.rs) and the Visual Studio 2022 Build Tools with the **VCTools** workload:
 
 ```powershell
 winget install --id Microsoft.VisualStudio.2022.BuildTools -e

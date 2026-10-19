@@ -5,7 +5,7 @@ backend, plain TypeScript in the frontend, no UI framework.
 
 ## Getting set up
 
-You need Windows 11, Node 20+, Rust stable (MSVC) and the Visual Studio 2022
+You need Windows 11, Node 22.18+, Rust stable (MSVC) and the Visual Studio 2022
 Build Tools with the **VCTools** workload. See the README for the exact
 commands.
 

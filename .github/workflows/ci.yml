@@ -12,7 +12,9 @@ jobs:
       - uses: actions/checkout@v4
       - uses: actions/setup-node@v4
         with:
-          node-version: 20
+          # Node 22.18+ is the first version that runs the .ts test files
+          # without a flag (type stripping) and expands the test glob.
+          node-version: 24
       - run: npm ci
       - run: npm test
       - run: npm run build
