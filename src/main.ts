@@ -1,7 +1,13 @@
 import { convertFileSrc, invoke } from "@tauri-apps/api/core";
 import { listen } from "@tauri-apps/api/event";
+import { check, type Update } from "@tauri-apps/plugin-updater";
 import { fitShot, planShot, renderShot, type ShotEls } from "./shot.ts";
 import { renderSaveDir, type SaveDirEls } from "./settings.ts";
+import {
+  downloadedSoFar,
+  updateNotice,
+  updateProgress,
+} from "./update.ts";
 
 const home = document.getElementById("home") as HTMLDivElement;
 const shotView = document.getElementById("shot") as HTMLDivElement;
@@ -17,6 +23,7 @@ const keys = document.getElementById("keys") as HTMLSpanElement;
 const saveDir = document.getElementById("saveDir") as HTMLSpanElement;
 const saveDirBtn = document.getElementById("saveDirBtn") as HTMLButtonElement;
 const saveDirReset = document.getElementById("saveDirReset") as HTMLButtonElement;
+const updateBtn = document.getElementById("updateBtn") as HTMLButtonElement;
 
 const els: ShotEls = { img, dims, dot, home, shot: shotView };
 const saveEls: SaveDirEls = {
@@ -64,9 +71,9 @@ function showHome() {
 }
 
 /// A notice is only there when it has something to say.
-function showNotice(text: string, kind: "warn" | "error") {
+function showNotice(text: string, kind?: "warn" | "error") {
   notice.textContent = text;
-  notice.className = `notice show ${kind}`;
+  notice.className = kind ? `notice show ${kind}` : "notice show";
   fitHome();
 }
 
@@ -264,6 +271,50 @@ saveDirReset.addEventListener("click", async () => {
     console.error("save folder reset failed", err);
   }
 });
+
+// ------------------------------------------------------------------ update
+
+// A newer version, if there is one, is offered at startup. Nothing is
+// downloaded until the user says so.
+void offerUpdate();
+
+async function offerUpdate() {
+  try {
+    const update = await check();
+    if (!update) return;
+    showNotice(updateNotice(update.version));
+    updateBtn.hidden = false;
+    updateBtn.addEventListener("click", () => void installUpdate(update));
+    fitHome();
+  } catch (err) {
+    // No network, or the feed is unreachable: not worth a message.
+    console.error("update check failed", err);
+  }
+}
+
+async function installUpdate(update: Update) {
+  updateBtn.disabled = true;
+  let done = 0;
+  let total = 0;
+  try {
+    await update.downloadAndInstall((event) => {
+      if (event.event === "Started") {
+        total = event.data.contentLength ?? 0;
+        done = 0;
+      } else if (event.event === "Progress") {
+        done = downloadedSoFar(event, done);
+        showNotice(updateProgress(done, total));
+      } else {
+        // The download is done. The installer closes the app now.
+        showNotice("Installing the update… the app closes now.");
+      }
+    });
+  } catch (err) {
+    console.error("update failed", err);
+    showNotice("The update failed. Try again later.", "error");
+    updateBtn.disabled = false;
+  }
+}
 
 // ------------------------------------------------------------------- drag
 

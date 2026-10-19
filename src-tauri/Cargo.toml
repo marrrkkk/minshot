@@ -1,12 +1,13 @@
 [package]
 name = "minshot"
-version = "0.1.0"
+version = "0.2.0"
 edition = "2021"
 authors = ["marrrkkk <marklouie.dev@gmail.com>"]
 description = "Minimal Windows screenshot-to-terminal utility"
 license = "MIT"
 repository = "https://github.com/marrrkkk/minshot"
-rust-version = "1.77"
+# The updater plugin needs 1.90.
+rust-version = "1.90"
 
 [lib]
 name = "minshot_lib"
@@ -41,6 +42,9 @@ windows = { version = "0.62", features = [
   "Win32_UI_Shell",
   "Win32_UI_WindowsAndMessaging",
 ] }
+
+[target.'cfg(not(any(target_os = "android", target_os = "ios")))'.dependencies]
+tauri-plugin-updater = "2"
 
 [profile.release]
 # The release build is the fast one: the PNG encoder and the screen grab

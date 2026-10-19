@@ -19,6 +19,14 @@ Closing the window quits the app. The tray holds Open / Capture / Quit.
 
 Grab the installer from the [releases page](https://github.com/marrrkkk/minshot/releases) and run it. It installs for the current user, no admin rights, and WebView2 ships with Windows 11.
 
+> **The installer is not code-signed yet**, so Windows SmartScreen shows "Windows protected your PC" the first time. Click **More info → Run anyway**, or right-click the file → **Properties → Unblock** before running it. The app itself is MIT-licensed and open source — the warning is about the unknown publisher, not about the software.
+
+## Updates
+
+The app checks GitHub once at startup. If a newer version exists, the launcher says so and offers a button — nothing is downloaded until you click it. The update is signed with a key that ships inside the app, so the app only installs updates that come from this repository.
+
+Updates need the app to be **installed** (the portable `.exe` cannot update itself).
+
 ## Use
 
 - **Capture:** click **New capture**, or press `Ctrl+Shift+4` anywhere.
@@ -58,6 +66,14 @@ cargo test --manifest-path src-tauri/Cargo.toml   # 15 Rust unit tests
 ```
 
 The first build compiles all Rust dependencies (one-time, several minutes).
+
+A release build also needs the updater signing key, or the bundle comes out
+without the update artifacts:
+
+```powershell
+$env:TAURI_SIGNING_PRIVATE_KEY = Get-Content "$HOME\.tauri\minshot.key" -Raw
+npm run tauri build
+```
 
 The Rust tests that need a real desktop (screen capture, the clipboard, the folder picker) are marked `#[ignore]` and skipped in CI. Run them with:
 

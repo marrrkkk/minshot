@@ -1,7 +1,7 @@
 {
   "$schema": "https://schema.tauri.app/config/2",
   "productName": "minshot",
-  "version": "0.1.0",
+  "version": "0.2.0",
   "identifier": "com.minshot.app",
   "build": {
     "devUrl": "http://localhost:1420",
@@ -57,6 +57,7 @@
   "bundle": {
     "active": true,
     "targets": ["nsis"],
+    "createUpdaterArtifacts": true,
     "publisher": "marrrkkk",
     "license": "MIT",
     "icon": [
@@ -69,6 +70,18 @@
     "windows": {
       "nsis": {
         "installMode": "currentUser"
+      }
+    }
+  },
+  "plugins": {
+    "updater": {
+      "requireSignedVersion": true,
+      "pubkey": "dW50cnVzdGVkIGNvbW1lbnQ6IG1pbmlzaWduIHB1YmxpYyBrZXk6IENFMjE4M0JCMjM0RjA2NkEKUldScUJrOGp1NE1oenVuT1pYVTQxNmJZck4yWmVLdmI5ZUJSb1l3ekJkSXVHdUovdzBWbUVOTU0K",
+      "endpoints": [
+        "https://github.com/marrrkkk/minshot/releases/latest/download/latest.json"
+      ],
+      "windows": {
+        "installMode": "passive"
       }
     }
   }

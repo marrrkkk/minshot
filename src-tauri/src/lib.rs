@@ -500,7 +500,9 @@ fn start_native_drag(app: AppHandle, state: tauri::State<'_, AppState>) -> Resul
 pub fn run() {
     files::cleanup_stale(24 * 3600);
 
-    let mut builder = tauri::Builder::default().manage(AppStatus::default());
+    let mut builder = tauri::Builder::default()
+        .plugin(tauri_plugin_updater::Builder::new().build())
+        .manage(AppStatus::default());
 
     #[cfg(desktop)]
     {

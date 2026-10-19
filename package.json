@@ -1,7 +1,7 @@
 {
   "name": "minshot",
   "private": true,
-  "version": "0.1.0",
+  "version": "0.2.0",
   "description": "Minimal Windows screenshot-to-terminal utility",
   "license": "MIT",
   "author": "marrrkkk <marklouie.dev@gmail.com>",
@@ -32,6 +32,7 @@
     "vite": "^6.0.0"
   },
   "dependencies": {
-    "@tauri-apps/api": "^2.2.0"
+    "@tauri-apps/api": "^2.2.0",
+    "@tauri-apps/plugin-updater": "^2.14.0"
   }
 }

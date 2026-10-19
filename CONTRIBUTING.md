@@ -54,3 +54,12 @@ The maintainer cuts releases by tagging: bump the version in `package.json`,
 `src-tauri/Cargo.toml` and `src-tauri/tauri.conf.json` (all three must match),
 commit, then push the tag. The release workflow builds the installer and
 attaches it to the GitHub Release.
+
+The build needs the updater signing key as the `TAURI_SIGNING_PRIVATE_KEY`
+secret. The matching public key is in `src-tauri/tauri.conf.json`. **Lose the
+private key and every installed copy can never update again** — keep a backup
+outside the repository. Generate a new pair with:
+
+```powershell
+npm run tauri signer generate -- -w $HOME\.tauri\minshot.key --ci
+```
