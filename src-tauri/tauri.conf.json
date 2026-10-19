@@ -18,10 +18,12 @@
         "url": "index.html",
         "visible": true,
         "skipTaskbar": false,
-        "backgroundColor": "#09090b",
-        "width": 380,
-        "height": 340,
-        "resizable": false,
+        "backgroundColor": "#0b0b0e",
+        "width": 248,
+        "height": 190,
+        "resizable": true,
+        "minWidth": 240,
+        "minHeight": 170,
         "maximizable": false,
         "minimizable": true
       },
@@ -45,7 +47,7 @@
       }
     ],
     "security": {
-      "csp": "default-src 'self'; img-src 'self' asset: http://asset.localhost data: blob:; style-src 'self' 'unsafe-inline'; script-src 'self'",
+      "csp": "default-src 'self'; connect-src ipc: http://ipc.localhost; img-src 'self' asset: http://asset.localhost data: blob:; style-src 'self' 'unsafe-inline'; script-src 'self'",
       "assetProtocol": {
         "enable": true,
         "scope": ["$TEMP/minshot/*"]

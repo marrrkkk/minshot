@@ -26,4 +26,7 @@ pub fn virtual_screen_rect() -> (i32, i32, u32, u32) {
     (0, 0, 800, 600)
 }
 
+pub mod com;
 pub mod drag;
+pub mod picker;
+pub mod screen;

@@ -11,6 +11,9 @@
 
 use image::ImageEncoder;
 
+/// A physical rectangle: (x, y, width, height).
+pub type PhysRect = (i32, i32, u32, u32);
+
 #[derive(Debug, Clone)]
 pub struct Captured {
     pub width: u32,
@@ -28,6 +31,22 @@ pub fn encode_png(rgba: &[u8], width: u32, height: u32) -> Result<Vec<u8>, Strin
     Ok(png_bytes)
 }
 
+/// Decode a PNG back into RGBA pixels.
+pub fn decode_png(png: &[u8]) -> Result<Captured, String> {
+    use image::ImageDecoder;
+    let decoder = image::codecs::png::PngDecoder::new(std::io::Cursor::new(png))
+        .map_err(|e| format!("PNG decode failed: {e}"))?;
+    let (width, height) = decoder.dimensions();
+    let image = image::DynamicImage::from_decoder(decoder)
+        .map_err(|e| format!("PNG decode failed: {e}"))?
+        .to_rgba8();
+    Ok(Captured {
+        width,
+        height,
+        rgba: image.into_raw(),
+    })
+}
+
 /// Normalize a drag rect. Returns `None` for zero/tiny selections (a click,
 /// not a capture).
 pub fn normalize_rect(x0: f64, y0: f64, x1: f64, y1: f64) -> Option<(i32, i32, u32, u32)> {
@@ -42,8 +61,15 @@ pub fn normalize_rect(x0: f64, y0: f64, x1: f64, y1: f64) -> Option<(i32, i32, u
 }
 
 /// Capture a rect given in overlay-window CSS px (`scale` =
-/// `window.devicePixelRatio`).
-pub fn capture_css_rect(x: f64, y: f64, w: f64, h: f64, scale: f64) -> Result<Captured, String> {
+/// `window.devicePixelRatio`). Returns the capture and the physical rect it
+/// was taken from, so the caller can tell which monitor it came from.
+pub fn capture_css_rect(
+    x: f64,
+    y: f64,
+    w: f64,
+    h: f64,
+    scale: f64,
+) -> Result<(Captured, PhysRect), String> {
     let scale = if scale.is_finite() && scale > 0.0 {
         scale
     } else {
@@ -57,7 +83,8 @@ pub fn capture_css_rect(x: f64, y: f64, w: f64, h: f64, scale: f64) -> Result<Ca
         vy as f64 + (y + h) * scale,
     )
     .ok_or_else(|| "selection too small".to_string())?;
-    capture_physical_rect(phys.0, phys.1, phys.2, phys.3)
+    let cap = capture_physical_rect(phys.0, phys.1, phys.2, phys.3)?;
+    Ok((cap, phys))
 }
 
 /// Capture a physical-pixel rect, clamped to the monitor holding its center.
@@ -65,16 +92,7 @@ pub fn capture_css_rect(x: f64, y: f64, w: f64, h: f64, scale: f64) -> Result<Ca
 pub fn capture_physical_rect(x: i32, y: i32, w: u32, h: u32) -> Result<Captured, String> {
     let cx = x + (w / 2) as i32;
     let cy = y + (h / 2) as i32;
-    let monitor =
-        xcap::Monitor::from_point(cx, cy).map_err(|e| format!("no monitor at ({cx},{cy}): {e}"))?;
-    let mx = monitor.x().map_err(|e| format!("monitor x failed: {e}"))?;
-    let my = monitor.y().map_err(|e| format!("monitor y failed: {e}"))?;
-    let mw = monitor
-        .width()
-        .map_err(|e| format!("monitor width failed: {e}"))?;
-    let mh = monitor
-        .height()
-        .map_err(|e| format!("monitor height failed: {e}"))?;
+    let (mx, my, mw, mh) = crate::win::screen::monitor_bounds_at(cx, cy)?;
     // Intersect requested rect with monitor bounds (i64: monitors left of
     // or above the primary have negative origins, which `as u32` would wrap).
     let ix0 = x.max(mx) as i64;
@@ -84,22 +102,16 @@ pub fn capture_physical_rect(x: i32, y: i32, w: u32, h: u32) -> Result<Captured,
     if ix1 <= ix0 || iy1 <= iy0 {
         return Err("selection is outside all monitors".to_string());
     }
-    // Region coords are monitor-local (non-negative by the clamp above).
-    let img = monitor
-        .capture_region(
-            (ix0 - mx as i64) as u32,
-            (iy0 - my as i64) as u32,
-            (ix1 - ix0) as u32,
-            (iy1 - iy0) as u32,
-        )
-        .map_err(|e| format!("screen capture failed: {e}"))?;
-
-    let (cw, ch) = (img.width(), img.height());
-    let rgba = img.into_raw();
+    let rgba = crate::win::screen::grab_rect(
+        ix0 as i32,
+        iy0 as i32,
+        (ix1 - ix0) as u32,
+        (iy1 - iy0) as u32,
+    )?;
 
     Ok(Captured {
-        width: cw,
-        height: ch,
+        width: (ix1 - ix0) as u32,
+        height: (iy1 - iy0) as u32,
         rgba,
     })
 }
@@ -131,7 +143,20 @@ mod tests {
         );
     }
 
-    /// Hits the real screen (DXGI) — verifies xcap + crop + PNG encode on hardware.
+    /// A PNG round trip: the pixels that go in come back out.
+    #[test]
+    fn png_round_trip_keeps_the_pixels() {
+        let mut rgba = Vec::new();
+        for i in 0..(8 * 8 * 4) {
+            rgba.push((i % 251) as u8);
+        }
+        let png = encode_png(&rgba, 8, 8).expect("PNG encode failed");
+        let back = decode_png(&png).expect("PNG decode failed");
+        assert_eq!((back.width, back.height), (8, 8));
+        assert_eq!(back.rgba, rgba);
+    }
+
+    /// Hits the real screen (DXGI) — verifies the grab + crop + PNG encode on hardware.
     /// Needs a desktop session, so it is skipped in CI:
     /// `cargo test -- --include-ignored` runs it.
     #[test]

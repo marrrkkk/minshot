@@ -1,86 +1,65 @@
 <!doctype html>
-<html>
+<html lang="en">
 <head>
 <meta charset="utf-8" />
-<meta name="theme-color" content="#09090b" />
+<meta name="theme-color" content="#0b0b0e" />
 <title>minshot</title>
 <link rel="stylesheet" href="/src/theme.css" />
+<link rel="stylesheet" href="/src/app.css" />
 <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
-<style>
-  #homeView { display: flex; flex-direction: column; height: 100vh; padding: 1rem; box-sizing: border-box; }
-  .appHead { display: flex; align-items: center; gap: 0.625rem; }
-  .dragZone { display: flex; align-items: center; gap: 0.625rem; flex: 1; min-width: 0; }
-  .logoMark {
-    width: 2rem; height: 2rem; border-radius: 0.5rem; flex: none; box-sizing: border-box;
-    background: #18181b; color: #fafafa; border: 1px solid var(--border);
-    display: flex; align-items: center; justify-content: center;
-  }
-  .logoMark svg { width: 1.5rem; height: 1.5rem; display: block; }
-  .appHead h1 { font-size: 0.875rem; font-weight: 600; margin: 0; line-height: 1.25; }
-  .appHead p { font-size: 0.75rem; margin: 0; }
-  .appHead .spacer { flex: 1; }
-  #homeView .newBtn { margin-top: 1rem; }
-  .shortcutRow { margin-top: 0.625rem; font-size: 0.75rem; text-align: center; }
-  .warn { margin-top: 0.625rem; font-size: 0.75rem; color: #f59e0b; }
-  .foot { display: flex; justify-content: flex-end; align-items: center; margin-top: 0.375rem; }
-
-  #shotView { padding: 0.625rem; box-sizing: border-box; }
-  #shotCard { width: max-content; transition: transform 0.15s ease, box-shadow 0.15s ease; }
-  #metaBar { display: flex; align-items: center; gap: 0.5rem; padding: 0.375rem 0.5rem;
-    font-size: 0.75rem; }
-  #metaBar .dot { width: 0.5rem; height: 0.5rem; border-radius: 50%; background: #4ade80; flex: none; }
-  #metaBar .spacer { flex: 1; }
-  #imgwrap { position: relative; line-height: 0; display: flex; justify-content: center; }
-  /* The image size is set by the app (fit to the window), not by CSS. */
-  #shot { display: block; cursor: grab; }
-  #shot:active { cursor: grabbing; }
-  #dropHint { display: none; position: absolute; left: 50%; top: 50%; transform: translate(-50%,-50%);
-    background: rgba(0,0,0,0.72); border: 1.5px dashed var(--primary); color: #fff;
-    font-size: 0.75rem; line-height: 1.4; padding: 0.5rem 0.875rem; border-radius: 0.5rem; white-space: nowrap; }
-  #shotFoot { padding: 0.375rem 0.5rem 0.4375rem; font-size: 0.6875rem; line-height: 1.4; }
-  .actionRow { display: flex; gap: 0.5rem; margin-top: 0.5rem; }
-  .actionRow .newBtn { flex: 1; }
-  #shotView .foot { margin-top: 0.25rem; }
-  /* Drag-in-progress feedback. */
-  #shotCard.dragging { transform: scale(0.96); outline: 2px dashed var(--primary); outline-offset: -2px; }
-  #shotCard.dragging #shot { opacity: 0.6; }
-  #shotCard.dragging #dropHint { display: block; }
-
-  .hidden { display: none !important; }
-</style>
 </head>
 <body>
-<div id="homeView">
-  <div id="homeInner">
-  <div class="appHead">
-    <div class="dragZone" data-tauri-drag-region>
-      <div class="logoMark"><svg viewBox="0 0 256 256" aria-hidden="true"><path fill="currentColor" d="M16 40 H240 V216 H204 V76 H146 V216 H110 V76 H52 V216 H16 Z"/></svg></div>
-      <div><h1>minshot</h1><p class="muted">Screenshot → terminal, minus the saving.</p></div>
+  <!-- Launcher: the app's front door. -->
+  <div id="home" class="view active">
+    <header class="appbar" data-tauri-drag-region="deep">
+      <span class="mark" aria-hidden="true">
+        <svg viewBox="0 0 256 256"><path fill="currentColor" d="M16 40 H240 V216 H204 V76 H146 V216 H110 V76 H52 V216 H16 Z"/></svg>
+      </span>
+      <span class="wordmark">minshot</span>
+    </header>
+    <div class="home-body">
+      <button id="newBtn" class="btn btn-primary btn-lg newBtn" type="button" title="Capture a region of the screen">
+        <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M6 2v14a2 2 0 0 0 2 2h14M18 22V8a2 2 0 0 0-2-2H2"/></svg>
+        <span class="btn-label">New capture</span>
+      </button>
+      <p class="hint">
+        <span id="keys"></span>
+        <span class="hint-text">to capture anywhere</span>
+      </p>
+      <div class="save-row">
+        <span class="save-label">Save to</span>
+        <span class="save-dir" id="saveDir">Temp folder</span>
+        <button id="saveDirBtn" class="btn btn-quiet" type="button" title="Choose a folder for the screenshots">Change</button>
+        <button id="saveDirReset" class="btn btn-quiet btn-icon" type="button" title="Save to the temp folder instead" hidden>&times;</button>
+      </div>
+      <p id="notice" class="notice" role="status"></p>
     </div>
-    <div class="spacer"></div>
-    <span class="badge">v0.1.0</span>
-    <button class="btn btn-ghost quit" title="Quit minshot">Quit</button>
   </div>
-  <button class="btn btn-primary btn-block newBtn" title="Capture a screen region">＋ New capture</button>
-  <div class="shortcutRow muted">or press <span class="kbd">Ctrl</span><span class="kbd">Shift</span><span class="kbd">4</span> anywhere</div>
-  <div id="warn" class="warn hidden"></div>
-  <div class="foot"><span class="ver">PNG · auto-copy · no history</span></div>
-  </div>
-</div>
-<div id="shotView" class="hidden">
-  <div id="shotCard" class="card">
-    <div id="metaBar">
-      <div class="dot" data-tauri-drag-region></div><span data-tauri-drag-region>Screenshot</span><div class="spacer"></div><span class="badge" id="dims">–</span><button class="btn btn-ghost quit" title="Quit minshot">Quit</button>
+
+  <!-- Shot view: the capture, and the two things you can do with it. -->
+  <div id="shot" class="view">
+    <div class="toolbar" data-tauri-drag-region="deep">
+      <div class="tb-meta">
+        <span class="dot" id="clipDot" title="On the clipboard"></span>
+        <span class="tb-title">Screenshot</span>
+        <span class="tb-dims" id="dims">–</span>
+      </div>
+      <div class="tb-actions">
+        <button id="copyBtn" class="btn btn-secondary" type="button" title="Copy the screenshot to the clipboard">
+          <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="9" y="9" width="11" height="11" rx="2"/><path d="M5 15H4.5A1.5 1.5 0 0 1 3 13.5v-9A1.5 1.5 0 0 1 4.5 3h9A1.5 1.5 0 0 1 15 4.5V5"/></svg>
+          <span id="copyLabel" class="btn-label">Copy</span>
+        </button>
+        <button id="newBtn2" class="btn btn-primary newBtn" type="button" title="Capture another region (replaces this one)">
+          <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M6 2v14a2 2 0 0 0 2 2h14M18 22V8a2 2 0 0 0-2-2H2"/></svg>
+          <span class="btn-label">New capture</span>
+        </button>
+      </div>
     </div>
-    <div id="imgwrap"><img id="shot" alt="screenshot" draggable="false" /><div id="dropHint">Release to drop into terminal</div></div>
-    <div id="shotFoot" class="muted">Drag the image into Windows Terminal / OpenCode, or paste with Ctrl+V.</div>
+    <div class="preview" id="preview">
+      <img id="shotImg" alt="Screenshot" draggable="false" />
+      <div class="drop-hint">Release to drop into a terminal</div>
+    </div>
   </div>
-  <div class="actionRow">
-    <button class="btn btn-primary newBtn" title="Capture a screen region">＋ New capture</button>
-    <button class="btn btn-secondary copyBtn" title="Copy the screenshot to the clipboard">⧉ Copy</button>
-  </div>
-  <div class="foot"><span class="ver">PNG · auto-copy · no history</span></div>
-</div>
 <script type="module" src="/src/main.ts"></script>
 </body>
 </html>

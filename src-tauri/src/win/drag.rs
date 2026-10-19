@@ -25,8 +25,8 @@ mod imp {
                 Com::*,
                 Memory::*,
                 Ole::{
-                    DoDragDrop, IDropSource, IDropSource_Impl, OleInitialize, OleUninitialize,
-                    CF_HDROP, DROPEFFECT, DROPEFFECT_COPY,
+                    DoDragDrop, IDropSource, IDropSource_Impl, CF_HDROP, DROPEFFECT,
+                    DROPEFFECT_COPY,
                 },
                 SystemServices::{MK_LBUTTON, MODIFIERKEYS_FLAGS},
             },
@@ -298,17 +298,18 @@ mod imp {
             // Fast click released before the hop: no drag to perform.
             return;
         }
-        unsafe {
-            let _ = OleInitialize(Some(std::ptr::null_mut()));
-        }
-        let data: IDataObject =
-            ComObject::new(FileDropData::new(std::slice::from_ref(&file))).to_interface();
-        let source: IDropSource = ComObject::new(DropSource).to_interface();
-        let mut effect = DROPEFFECT::default();
-        unsafe {
-            let _ = DoDragDrop(&data, &source, DROPEFFECT_COPY, &mut effect);
-            OleUninitialize();
-        }
+        // OLE has to be up on this thread for the drag loop. The webview
+        // already brought COM up here, so this only initialises it when
+        // nobody else did — and then undoes exactly that.
+        crate::win::com::with_ole(|| {
+            let data: IDataObject =
+                ComObject::new(FileDropData::new(std::slice::from_ref(&file))).to_interface();
+            let source: IDropSource = ComObject::new(DropSource).to_interface();
+            let mut effect = DROPEFFECT::default();
+            unsafe {
+                let _ = DoDragDrop(&data, &source, DROPEFFECT_COPY, &mut effect);
+            }
+        });
     }
 }
 

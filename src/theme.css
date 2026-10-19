@@ -1,145 +1,215 @@
-/* shadcn/zinc design tokens + tauri-ui desktop defaults, hand-ported.
- * No frameworks, no build-time deps: plain CSS variables + classes.
- * Dark follows :root; light follows the OS via prefers-color-scheme. */
+/* minshot — one visual language for the whole app.
+ *
+ * Near-black surfaces, hairline borders, a single accent, 13px type on an
+ * 8px grid. Dark by default, light when the OS asks for it. No frameworks,
+ * no build-time deps: plain CSS variables + classes. */
 
 :root {
-  --radius: 0.625rem; /* shadcn radius */
-  --background: #09090b;
-  --foreground: #fafafa;
-  --card: #101014;
-  --card-foreground: #fafafa;
+  color-scheme: dark light;
+
+  /* Surfaces */
+  --bg: #0b0b0e;
+  --surface: #17171b;
+  --surface-hi: #212128;
+
+  /* Hairlines */
+  --line: rgba(255, 255, 255, 0.09);
+  --line-hi: rgba(255, 255, 255, 0.16);
+
+  /* Text */
+  --fg: #f4f4f5;
+  --fg-dim: #a1a1aa;
+  --fg-faint: #71717a;
+
+  /* The one accent: live state and keyboard focus. */
+  --accent: #4ade80;
+  --accent-ink: #062012;
+  --warn: #fbbf24;
+  --danger: #fb7185;
+
+  /* Primary action: paper on ink, the Windows way. */
   --primary: #fafafa;
-  --primary-foreground: #18181b;
-  --secondary: #27272a;
-  --secondary-foreground: #fafafa;
-  --muted: #27272a;
-  --muted-foreground: #a1a1aa;
-  --border: rgba(255, 255, 255, 0.1);
-  --ring: #d4d4d8;
-  --shadow: 0 8px 30px rgba(0, 0, 0, 0.45);
+  --primary-ink: #18181b;
+  --primary-hi: #dcdce0;
+
+  /* Notices */
+  --notice-warn-bg: rgba(251, 191, 36, 0.1);
+  --notice-warn-line: rgba(251, 191, 36, 0.28);
+  --notice-warn-fg: #fcd34d;
+  --notice-err-bg: rgba(251, 113, 133, 0.1);
+  --notice-err-line: rgba(251, 113, 133, 0.3);
+  --notice-err-fg: #fda4af;
+
+  /* The hint that sits on top of the capture while it is being dragged. */
+  --overlay-bg: rgba(9, 9, 11, 0.88);
+
+  --r-sm: 4px;
+  --r: 6px;
+  --r-lg: 8px;
+  --pad: 12px;
+  --dur: 120ms;
+
+  --font: "Inter", ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto,
+    sans-serif;
+  --mono: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
 }
 
 @media (prefers-color-scheme: light) {
   :root {
-    --background: #ffffff;
-    --foreground: #09090b;
-    --card: #ffffff;
-    --card-foreground: #09090b;
+    --bg: #f3f3f4;
+    --surface: #ffffff;
+    --surface-hi: #e9e9ec;
+    --line: rgba(0, 0, 0, 0.1);
+    --line-hi: rgba(0, 0, 0, 0.18);
+    --fg: #18181b;
+    --fg-dim: #52525b;
+    --fg-faint: #71717a;
+    --accent: #15803d;
+    --accent-ink: #ffffff;
+    --warn: #b45309;
+    --danger: #be123c;
     --primary: #18181b;
-    --primary-foreground: #fafafa;
-    --secondary: #f4f4f5;
-    --secondary-foreground: #18181b;
-    --muted: #f4f4f5;
-    --muted-foreground: #71717a;
-    --border: rgba(0, 0, 0, 0.1);
-    --ring: #18181b;
-    --shadow: 0 8px 30px rgba(0, 0, 0, 0.12);
+    --primary-ink: #fafafa;
+    --primary-hi: #2a2a31;
+    --notice-warn-bg: rgba(180, 83, 9, 0.08);
+    --notice-warn-line: rgba(180, 83, 9, 0.26);
+    --notice-warn-fg: #92400e;
+    --notice-err-bg: rgba(190, 18, 60, 0.07);
+    --notice-err-line: rgba(190, 18, 60, 0.26);
+    --notice-err-fg: #9f1239;
+    --overlay-bg: rgba(255, 255, 255, 0.92);
   }
 }
 
-/* ---- tauri-ui desktop papercuts: no rubber-banding, no stray selection ---- */
+/* ---- desktop basics: no rubber-banding, no stray selection ---- */
 html,
 body {
   margin: 0;
   padding: 0;
+  height: 100%;
   overscroll-behavior: none;
-  background: var(--background);
-  color: var(--foreground);
-  font-family: Inter, ui-sans-serif, system-ui, -apple-system, "Segoe UI",
-    Roboto, sans-serif;
+  background: var(--bg);
+  color: var(--fg);
+  font-family: var(--font);
+  font-size: 13px;
+  line-height: 1.4;
+  -webkit-font-smoothing: antialiased;
   -webkit-user-select: none;
   user-select: none;
   overflow: hidden;
 }
 
-/* ---- shadcn primitives ---- */
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+}
+
+/* ---- buttons ---- */
 .btn {
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  gap: 0.5rem;
-  border-radius: calc(var(--radius) - 2px);
-  font-size: 0.875rem;
-  font-weight: 500;
-  padding: 0.625rem 1rem;
-  cursor: pointer;
+  gap: 6px;
+  height: 30px;
+  padding: 0 10px;
   border: 1px solid transparent;
-  transition: background-color 0.15s ease, transform 0.05s ease;
+  border-radius: var(--r);
+  background: transparent;
+  color: var(--fg);
+  font: 500 13px/1 var(--font);
+  cursor: pointer;
   white-space: nowrap;
-}
-.btn:active {
-  transform: scale(0.98);
+  transition: background-color var(--dur) ease, border-color var(--dur) ease,
+    color var(--dur) ease;
 }
 .btn:focus-visible {
-  outline: 2px solid var(--ring);
+  outline: 2px solid var(--accent);
   outline-offset: 2px;
+}
+.btn:active:not(:disabled) {
+  filter: brightness(0.92);
+}
+.btn:disabled {
+  opacity: 0.4;
+  cursor: default;
+}
+.btn .icon {
+  width: 15px;
+  height: 15px;
+  flex: none;
 }
 .btn-primary {
   background: var(--primary);
-  color: var(--primary-foreground);
-  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.2);
+  color: var(--primary-ink);
 }
-.btn-primary:hover {
-  filter: brightness(0.92);
+.btn-primary:hover:not(:disabled) {
+  background: var(--primary-hi);
 }
 .btn-secondary {
-  background: var(--secondary);
-  color: var(--secondary-foreground);
-  border-color: var(--border);
+  background: var(--surface);
+  border-color: var(--line);
+  color: var(--fg);
 }
-.btn-secondary:hover {
-  filter: brightness(1.15);
+.btn-secondary:hover:not(:disabled) {
+  background: var(--surface-hi);
+  border-color: var(--line-hi);
 }
-.btn-ghost {
-  background: transparent;
-  color: var(--muted-foreground);
-  border: 0;
-  font-size: 0.75rem;
-  padding: 0.25rem 0;
-}
-.btn-ghost:hover {
-  color: var(--foreground);
-}
-.btn-block {
-  width: 100%;
-  box-sizing: border-box;
+.btn-lg {
+  height: 36px;
+  padding: 0 14px;
+  font-size: 13.5px;
 }
 
-.badge {
-  display: inline-flex;
-  align-items: center;
-  border: 1px solid var(--border);
-  border-radius: 9999px;
-  padding: 0.1rem 0.55rem;
-  font-size: 0.7rem;
-  font-weight: 500;
-  color: var(--muted-foreground);
-  white-space: nowrap;
-}
-
+/* ---- keyboard keys ---- */
 .kbd {
   display: inline-block;
-  border: 1px solid var(--border);
+  min-width: 18px;
+  padding: 2px 5px;
+  border: 1px solid var(--line);
   border-bottom-width: 2px;
-  border-radius: 6px;
-  background: var(--muted);
-  color: var(--foreground);
-  font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
-  font-size: 0.7rem;
+  border-radius: var(--r-sm);
+  background: var(--surface);
+  color: var(--fg-dim);
+  font-family: var(--mono);
+  font-size: 10.5px;
   font-weight: 600;
-  padding: 0.1rem 0.4rem;
-  margin: 0 0.1rem;
+  line-height: 1.25;
+  text-align: center;
 }
 
-.card {
-  border-radius: var(--radius);
-  overflow: hidden;
-  background: var(--card);
-  color: var(--card-foreground);
-  border: 1px solid var(--border);
-  box-shadow: var(--shadow);
+/* ---- status dot: the capture's live state ---- */
+.dot {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: var(--accent);
+  flex: none;
+}
+.dot.warn {
+  background: var(--warn);
 }
 
-.muted {
-  color: var(--muted-foreground);
+/* ---- notices: only when there is something to say ---- */
+.notice {
+  display: none;
+  margin: 0;
+  padding: 7px 9px;
+  border: 1px solid transparent;
+  border-radius: var(--r-sm);
+  font-size: 12px;
+  line-height: 1.45;
+}
+.notice.show {
+  display: block;
+}
+.notice.warn {
+  background: var(--notice-warn-bg);
+  border-color: var(--notice-warn-line);
+  color: var(--notice-warn-fg);
+}
+.notice.error {
+  background: var(--notice-err-bg);
+  border-color: var(--notice-err-line);
+  color: var(--notice-err-fg);
 }

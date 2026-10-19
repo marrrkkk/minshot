@@ -1,0 +1,211 @@
+/* minshot — the two views of the app window.
+ *
+ * The launcher is a small identity strip, one primary action and the
+ * shortcut. The shot view is a toolbar and the capture itself: no card
+ * around the image, no second window inside the first. */
+
+.view {
+  display: none;
+}
+.view.active {
+  display: flex;
+}
+
+/* ---- launcher ---- */
+#home {
+  flex-direction: column;
+  width: 248px;
+  max-width: 100%;
+  margin: 0 auto;
+  padding: 10px 12px 12px;
+}
+
+.appbar {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  height: 22px;
+  flex: none;
+}
+.mark {
+  display: grid;
+  place-items: center;
+  width: 20px;
+  height: 20px;
+  border-radius: 5px;
+  background: var(--primary);
+  color: var(--primary-ink);
+  flex: none;
+}
+.mark svg {
+  width: 13px;
+  height: 13px;
+  display: block;
+}
+.wordmark {
+  font-size: 13px;
+  font-weight: 600;
+  letter-spacing: -0.01em;
+}
+
+.home-body {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  margin-top: 14px;
+}
+.home-body .btn-lg {
+  width: 100%;
+}
+
+.hint {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 4px;
+  margin: 0;
+  color: var(--fg-faint);
+  font-size: 11.5px;
+}
+.hint-text {
+  margin-left: 3px;
+}
+
+/* ---- where the screenshot is saved ---- */
+/* The browser's [hidden] rule is weaker than .btn's display, so a hidden
+ * button would still show. */
+[hidden] {
+  display: none !important;
+}
+.save-row {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  min-width: 0;
+  font-size: 11.5px;
+  color: var(--fg-faint);
+}
+.save-label {
+  flex: none;
+}
+.save-dir {
+  flex: 1;
+  min-width: 0;
+  overflow: hidden;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+  color: var(--fg-dim);
+}
+.btn-quiet {
+  flex: none;
+  height: 22px;
+  padding: 0 6px;
+  border-color: var(--line);
+  color: var(--fg-dim);
+  font-size: 11.5px;
+}
+.btn-quiet:hover:not(:disabled) {
+  background: var(--surface);
+  color: var(--fg);
+}
+.btn-icon {
+  width: 22px;
+  padding: 0;
+  font-size: 14px;
+  line-height: 1;
+}
+
+/* ---- shot view ---- */
+#shot {
+  flex-direction: column;
+  height: 100%;
+}
+
+.toolbar {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  height: 40px;
+  flex: none;
+  padding: 0 10px 0 12px;
+  border-bottom: 1px solid var(--line);
+  /* The toolbar is the window's drag handle. */
+  container-type: inline-size;
+}
+.tb-meta {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  min-width: 0;
+  font-size: 12px;
+}
+.tb-title {
+  color: var(--fg);
+  font-weight: 500;
+}
+.tb-dims {
+  color: var(--fg-faint);
+  font-variant-numeric: tabular-nums;
+}
+.tb-actions {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  margin-left: auto;
+}
+/* A narrow window drops the metadata rather than clipping the actions. */
+@container (max-width: 350px) {
+  .tb-meta {
+    display: none;
+  }
+}
+/* Narrower still: the actions keep their icons, the labels go. The text
+   stays in the DOM, so the buttons keep their accessible names. */
+@container (max-width: 215px) {
+  .btn-label {
+    font-size: 0;
+  }
+}
+
+.preview {
+  position: relative;
+  flex: 1;
+  min-height: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: var(--pad);
+  overflow: hidden;
+}
+#shotImg {
+  display: block;
+  cursor: grab;
+  /* The size is set by the app (it fits the workspace), not by CSS. */
+}
+#shotImg:active {
+  cursor: grabbing;
+}
+
+/* Drag-in-progress feedback. */
+.preview.dragging #shotImg {
+  transform: scale(0.96);
+  opacity: 0.65;
+}
+.drop-hint {
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  transform: translate(-50%, -50%);
+  display: none;
+  padding: 6px 10px;
+  border: 1px solid var(--line-hi);
+  border-radius: var(--r);
+  background: var(--overlay-bg);
+  color: var(--fg);
+  font-size: 12px;
+  white-space: nowrap;
+  pointer-events: none;
+}
+.preview.dragging .drop-hint {
+  display: block;
+}
