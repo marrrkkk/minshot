@@ -1,4 +1,4 @@
-import { invoke } from "@tauri-apps/api/core";
+import { convertFileSrc, invoke } from "@tauri-apps/api/core";
 import { listen } from "@tauri-apps/api/event";
 
 const homeView = document.getElementById("homeView") as HTMLDivElement;
@@ -6,7 +6,7 @@ const shotView = document.getElementById("shotView") as HTMLDivElement;
 const shotCard = document.getElementById("shotCard") as HTMLDivElement;
 const img = document.getElementById("shot") as HTMLImageElement;
 const dims = document.getElementById("dims") as HTMLSpanElement;
-const status = document.getElementById("status") as HTMLDivElement;
+const foot = document.getElementById("shotFoot") as HTMLDivElement;
 const homeInner = document.getElementById("homeInner") as HTMLDivElement;
 
 // Size the window to exactly fit the home content on startup, so the footer
@@ -50,13 +50,12 @@ document.querySelectorAll(".copyBtn").forEach((b) =>
 );
 
 // A capture turns the main window into the screenshot view.
-listen<{ base64: string; width: number; height: number; clipboard: boolean }>(
+listen<{ path: string; width: number; height: number; clipboard: boolean }>(
   "capture-ready",
   (e) => {
-    img.src = `data:image/png;base64,${e.payload.base64}`;
+    img.src = convertFileSrc(e.payload.path);
     dims.textContent = `${e.payload.width}×${e.payload.height}`;
-    const clip = e.payload.clipboard ? "copied to clipboard ✓" : "clipboard copy failed";
-    status.textContent = `${e.payload.width}×${e.payload.height} captured — ${clip}`;
+    foot.textContent += e.payload.clipboard ? " ✓ Copied" : " Copy failed — press ⧉ Copy.";
     homeView.classList.add("hidden");
     shotView.classList.remove("hidden");
   },

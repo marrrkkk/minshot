@@ -1,15 +1,15 @@
 //! Region capture: CSS rect (overlay window) -> physical pixels -> PNG bytes.
 //!
 //! The overlay window spans the virtual screen. Its `devicePixelRatio`
-//! converts CSS px to physical px. The capture is taken from the monitor
-//! containing the selection center and clamped to that monitor, so
-//! same-DPI setups are pixel-accurate. On mixed-DPI desktops the overlay
-//! scale matches the monitor hosting most of the overlay window; a
-//! selection on a differently-scaled monitor can be off by the scale ratio.
-//! That trade-off is documented in the README (per-monitor overlays would be
-//! needed for exact mixed-DPI mapping).
+//! converts CSS px to physical px. Only the selected region is captured
+//! (clamped to the monitor holding the selection center), so same-DPI
+//! setups are pixel-accurate and a tiny selection never pays for a full
+//! monitor grab. On mixed-DPI desktops the overlay scale matches the monitor
+//! hosting most of the overlay window; a selection on a differently-scaled
+//! monitor can be off by the scale ratio.
+//! shortcut: single overlay scale breaks on mixed-DPI, add per-monitor overlays to fix.
 
-use image::{ImageEncoder, RgbaImage};
+use image::ImageEncoder;
 
 #[derive(Debug, Clone)]
 pub struct Captured {
@@ -51,15 +51,12 @@ pub fn capture_css_rect(x: f64, y: f64, w: f64, h: f64, scale: f64) -> Result<Ca
 }
 
 /// Capture a physical-pixel rect, clamped to the monitor holding its center.
+/// Only the intersected region is grabbed — never the whole monitor.
 pub fn capture_physical_rect(x: i32, y: i32, w: u32, h: u32) -> Result<Captured, String> {
     let cx = x + (w / 2) as i32;
     let cy = y + (h / 2) as i32;
     let monitor = xcap::Monitor::from_point(cx, cy)
         .map_err(|e| format!("no monitor at ({cx},{cy}): {e}"))?;
-    let full = monitor
-        .capture_image()
-        .map_err(|e| format!("screen capture failed: {e}"))?;
-
     let mx = monitor.x().map_err(|e| format!("monitor x failed: {e}"))?;
     let my = monitor.y().map_err(|e| format!("monitor y failed: {e}"))?;
     let mw = monitor
@@ -68,23 +65,29 @@ pub fn capture_physical_rect(x: i32, y: i32, w: u32, h: u32) -> Result<Captured,
     let mh = monitor
         .height()
         .map_err(|e| format!("monitor height failed: {e}"))?;
-    // Intersect requested rect with monitor bounds.
-    let ix0 = (x.max(mx)) as u32;
-    let iy0 = (y.max(my)) as u32;
-    let ix1 = ((x as i64 + w as i64).min(mx as i64 + mw as i64)) as u32;
-    let iy1 = ((y as i64 + h as i64).min(my as i64 + mh as i64)) as u32;
+    // Intersect requested rect with monitor bounds (i64: monitors left of
+    // or above the primary have negative origins, which `as u32` would wrap).
+    let ix0 = x.max(mx) as i64;
+    let iy0 = y.max(my) as i64;
+    let ix1 = (x as i64 + w as i64).min(mx as i64 + mw as i64);
+    let iy1 = (y as i64 + h as i64).min(my as i64 + mh as i64);
     if ix1 <= ix0 || iy1 <= iy0 {
         return Err("selection is outside all monitors".to_string());
     }
-    let (cw, ch) = (ix1 - ix0, iy1 - iy0);
-    let local_x = ix0 - mx as u32;
-    let local_y = iy0 - my as u32;
-    let cropped: RgbaImage =
-        image::imageops::crop_imm(&full, local_x, local_y, cw, ch).to_image();
+    // Region coords are monitor-local (non-negative by the clamp above).
+    let img = monitor
+        .capture_region(
+            (ix0 - mx as i64) as u32,
+            (iy0 - my as i64) as u32,
+            (ix1 - ix0) as u32,
+            (iy1 - iy0) as u32,
+        )
+        .map_err(|e| format!("screen capture failed: {e}"))?;
 
+    let (cw, ch) = (img.width(), img.height());
     let mut png_bytes = Vec::new();
     image::codecs::png::PngEncoder::new(&mut png_bytes)
-        .write_image(cropped.as_raw(), cw, ch, image::ExtendedColorType::Rgba8)
+        .write_image(img.as_raw(), cw, ch, image::ExtendedColorType::Rgba8)
         .map_err(|e| format!("PNG encode failed: {e}"))?;
 
     Ok(Captured {

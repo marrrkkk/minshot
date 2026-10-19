@@ -14,8 +14,6 @@
   --secondary-foreground: #fafafa;
   --muted: #27272a;
   --muted-foreground: #a1a1aa;
-  --accent: #27272a;
-  --accent-foreground: #fafafa;
   --border: rgba(255, 255, 255, 0.1);
   --ring: #d4d4d8;
   --shadow: 0 8px 30px rgba(0, 0, 0, 0.45);
@@ -33,8 +31,6 @@
     --secondary-foreground: #18181b;
     --muted: #f4f4f5;
     --muted-foreground: #71717a;
-    --accent: #f4f4f5;
-    --accent-foreground: #18181b;
     --border: rgba(0, 0, 0, 0.1);
     --ring: #18181b;
     --shadow: 0 8px 30px rgba(0, 0, 0, 0.12);

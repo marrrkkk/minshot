@@ -25,8 +25,8 @@ mod imp {
                 Com::*,
                 Memory::*,
                 Ole::{
-                    DoDragDrop, OleInitialize, CF_HDROP, DROPEFFECT, DROPEFFECT_COPY,
-                    IDropSource, IDropSource_Impl,
+                    DoDragDrop, OleInitialize, OleUninitialize, CF_HDROP, DROPEFFECT,
+                    DROPEFFECT_COPY, IDropSource, IDropSource_Impl,
                 },
                 SystemServices::{MK_LBUTTON, MODIFIERKEYS_FLAGS},
             },
@@ -308,6 +308,7 @@ mod imp {
         let mut effect = DROPEFFECT::default();
         unsafe {
             let _ = DoDragDrop(&data, &source, DROPEFFECT_COPY, &mut effect);
+            OleUninitialize();
         }
     }
 }

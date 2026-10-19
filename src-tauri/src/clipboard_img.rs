@@ -6,8 +6,9 @@ use arboard::ImageData;
 use std::borrow::Cow;
 
 pub fn copy_png_to_clipboard(png_bytes: &[u8]) -> Result<(), String> {
-    let img =
-        image::load_from_memory(png_bytes).map_err(|e| format!("decode PNG failed: {e}"))?;
+    // We always write the PNG ourselves, so skip format sniffing.
+    let img = image::load_from_memory_with_format(png_bytes, image::ImageFormat::Png)
+        .map_err(|e| format!("decode PNG failed: {e}"))?;
     let rgba = img.to_rgba8();
     let (w, h) = (rgba.width() as usize, rgba.height() as usize);
     let mut clipboard =

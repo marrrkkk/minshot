@@ -28,7 +28,7 @@
       {
         "label": "overlay",
         "title": "minshot overlay",
-        "url": "src/overlay.html",
+        "url": "overlay.html",
         "transparent": true,
         "decorations": false,
         "alwaysOnTop": true,
@@ -45,7 +45,11 @@
       }
     ],
     "security": {
-      "csp": "default-src 'self'; img-src 'self' data: blob:; style-src 'self' 'unsafe-inline'; script-src 'self'"
+      "csp": "default-src 'self'; img-src 'self' asset: http://asset.localhost data: blob:; style-src 'self' 'unsafe-inline'; script-src 'self'",
+      "assetProtocol": {
+        "enable": true,
+        "scope": ["$TEMP/minshot/*"]
+      }
     }
   },
   "bundle": {

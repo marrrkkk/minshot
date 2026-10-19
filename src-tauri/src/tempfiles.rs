@@ -3,6 +3,7 @@
 //! (file-drag to terminals) that require a path.
 
 use std::path::PathBuf;
+use std::sync::atomic::{AtomicU64, Ordering};
 
 /// `%TEMP%/minshot`
 pub fn dir() -> PathBuf {
@@ -13,10 +14,18 @@ pub fn ensure_dir() -> std::io::Result<()> {
     std::fs::create_dir_all(dir())
 }
 
-/// `minshot-<uuid>.png` — unique per capture so a stale drop target can
-/// never resolve to a newer screenshot.
+static COUNTER: AtomicU64 = AtomicU64::new(0);
+
+/// `minshot-<pid>-<nanos>-<n>.png` — unique per capture (counter guarantees
+/// it even when two captures land in the same clock tick) so a stale drop
+/// target can never resolve to a newer screenshot.
 pub fn unique_png_path() -> PathBuf {
-    dir().join(format!("minshot-{}.png", uuid::Uuid::new_v4()))
+    let nanos = std::time::SystemTime::now()
+        .duration_since(std::time::UNIX_EPOCH)
+        .map(|d| d.as_nanos())
+        .unwrap_or(0);
+    let n = COUNTER.fetch_add(1, Ordering::Relaxed);
+    dir().join(format!("minshot-{}-{nanos}-{n}.png", std::process::id()))
 }
 
 pub fn remove_file_silent(path: &PathBuf) {
@@ -55,9 +64,25 @@ pub fn cleanup_stale(max_age_secs: u64) {
     }
 }
 
-/// Remove the whole temp dir (best effort, runs on app exit).
+/// Remove this process's PNGs (best effort, runs on app exit). Only our own
+/// PID's files: a second instance's capture must survive ours quitting.
 pub fn cleanup_all() {
-    let _ = std::fs::remove_dir_all(dir());
+    let prefix = format!("minshot-{}-", std::process::id());
+    if let Ok(entries) = std::fs::read_dir(dir()) {
+        for entry in entries.flatten() {
+            let path = entry.path();
+            let ours = path
+                .file_name()
+                .and_then(|n| n.to_str())
+                .map(|n| n.starts_with(&prefix) && n.ends_with(".png"))
+                .unwrap_or(false);
+            if ours {
+                remove_file_silent(&path);
+            }
+        }
+    }
+    // Succeeds only when no other instance's files remain.
+    let _ = std::fs::remove_dir(dir());
 }
 
 #[cfg(test)]
