@@ -10,11 +10,10 @@
    * below must always win, hence !important. */
   html {
     margin: 0; padding: 0; width: 100vw; height: 100vh; overflow: hidden;
-    /* Single dim layer on <html> only. NOTE: do NOT also set a background on
-     * <body> — both would paint and double-darken the screen. Must stay
-     * !important: any opaque page background would paint the whole screen
-     * solid instead of a transparent dim. */
-    background: rgba(0,0,0,0.30) !important;
+    /* No dim on the root. The dim belongs AROUND the selection, so the
+     * region that is about to be captured stays exactly as the screen
+     * shows it. The selection draws the dim itself (see #sel). */
+    background: transparent !important;
   }
   body {
     margin: 0; padding: 0; width: 100vw; height: 100vh; overflow: hidden;
@@ -23,16 +22,23 @@
     font-family: Inter, ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
     -webkit-user-select: none; user-select: none;
   }
-  #sel { position: fixed; border: 1.5px solid #fafafa; background: rgba(250,250,250,0.10);
-    /* A hairline ring, no blur: a blurred shadow over a full-screen-sized
-     * rectangle is expensive to repaint on every mouse move. */
-    box-shadow: 0 0 0 1px rgba(0,0,0,0.4);
+  /* The selection: nothing is painted inside it, so the captured pixels
+   * are the screen itself and not the overlay. The dim is its own shadow,
+   * spread far enough to cover the screen — that darkens everything
+   * EXCEPT the selection, the way the Windows snipping tool shows it.
+   * The edge is an outline (drawn outside the box), never a border: a
+   * border would sit inside the captured region and show up in the shot. */
+  #sel { position: fixed; background: transparent;
+    box-shadow: 0 0 0 100vmax rgba(0,0,0,0.35);
+    outline: 1px solid rgba(250,250,250,0.9);
+    z-index: 1;
     display: none; pointer-events: none; }
   #hint { position: fixed; top: 14px; left: 50%; transform: translateX(-50%);
     display: flex; gap: 6px; align-items: center; white-space: nowrap;
-    background: rgba(9,9,11,0.8); color: #fafafa;
-    border: 1px solid rgba(255,255,255,0.16); border-radius: 9999px;
-    font-size: 12px; font-weight: 500; padding: 6px 12px; pointer-events: none; }
+    background: rgba(9,9,11,0.92); color: #fafafa;
+    border: 1px solid rgba(255,255,255,0.22); border-radius: 9999px;
+    font-size: 12px; font-weight: 500; padding: 6px 12px; pointer-events: none;
+    z-index: 2; }
   #hint .kbd { display: inline-block; border: 1px solid rgba(255,255,255,0.16); border-bottom-width: 2px;
     border-radius: 6px; background: rgba(255,255,255,0.12); color: #fafafa;
     font-family: ui-monospace, Menlo, monospace; font-size: 11px; font-weight: 600; padding: 1px 6px; }

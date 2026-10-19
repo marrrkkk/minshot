@@ -16,7 +16,7 @@
         "label": "main",
         "title": "minshot",
         "url": "index.html",
-        "visible": true,
+        "visible": false,
         "skipTaskbar": false,
         "backgroundColor": "#0b0b0e",
         "width": 248,

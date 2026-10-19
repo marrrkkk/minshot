@@ -12,6 +12,7 @@ mod settings;
 mod win;
 
 use std::path::PathBuf;
+use std::sync::atomic::{AtomicBool, Ordering};
 use std::sync::Mutex;
 use tauri::window::Monitor;
 use tauri::{AppHandle, Emitter, Manager, RunEvent, WebviewWindow};
@@ -83,6 +84,9 @@ struct AppState {
     work_area: Mutex<Option<WorkArea>>,
     /// Where the screenshot is saved.
     settings: Settings,
+    /// True while the overlay is up. The main window has to stay hidden
+    /// then: it would cover the target area and end up in the screenshot.
+    selecting: AtomicBool,
 }
 
 impl AppState {
@@ -92,6 +96,14 @@ impl AppState {
 
     fn work_area(&self) -> Option<WorkArea> {
         *self.work_area.lock().expect("work area poisoned")
+    }
+
+    fn set_selecting(&self, selecting: bool) {
+        self.selecting.store(selecting, Ordering::Relaxed);
+    }
+
+    fn selecting(&self) -> bool {
+        self.selecting.load(Ordering::Relaxed)
     }
 }
 
@@ -154,18 +166,15 @@ fn main_window(app: &AppHandle) -> Result<WebviewWindow, String> {
         .ok_or_else(|| "main window missing".to_string())
 }
 
-fn show_overlay_inner(app: &AppHandle) -> Result<(), String> {
-    // Single-window UX: hide the main window while selecting, so it never
-    // covers the target area (or ends up in its own screenshot).
-    if let Ok(main) = main_window(app) {
-        // A minimized window is frozen: its webview gets no events, and the
-        // capture that follows would never reach the frontend. Bring it
-        // back to life before hiding it.
-        let _ = main.unminimize();
-        let _ = main.hide();
-    }
+/// Put the overlay over the whole virtual screen, so every monitor is
+/// selectable.
+///
+/// Done at startup, while the overlay is still hidden: sizing it on the
+/// first capture would show the window growing from its placeholder size
+/// to the screen, and that animation reads as a lag. Repeating it on every
+/// show keeps it right when the desktop changed (a monitor was plugged in).
+fn fit_overlay(app: &AppHandle) -> Result<(), String> {
     let overlay = overlay_window(app)?;
-    // Span the whole virtual screen so every monitor is selectable.
     let (vx, vy, vw, vh) = win::virtual_screen_rect();
     overlay
         .set_position(tauri::Position::Physical(tauri::PhysicalPosition {
@@ -179,6 +188,22 @@ fn show_overlay_inner(app: &AppHandle) -> Result<(), String> {
             height: vh,
         }))
         .map_err(|e| e.to_string())?;
+    Ok(())
+}
+
+fn show_overlay_inner(app: &AppHandle) -> Result<(), String> {
+    // Single-window UX: hide the main window while selecting, so it never
+    // covers the target area (or ends up in its own screenshot).
+    if let Ok(main) = main_window(app) {
+        // A minimized window is frozen: its webview gets no events, and the
+        // capture that follows would never reach the frontend. Bring it
+        // back to life before hiding it.
+        let _ = main.unminimize();
+        let _ = main.hide();
+    }
+    app.state::<AppState>().set_selecting(true);
+    let overlay = overlay_window(app)?;
+    fit_overlay(app)?;
     overlay.show().map_err(|e| e.to_string())?;
     overlay.set_focus().map_err(|e| e.to_string())?;
     Ok(())
@@ -190,6 +215,12 @@ fn show_overlay(app: AppHandle) -> Result<(), String> {
 }
 
 fn show_main_inner(app: &AppHandle, focus: bool) -> Result<(), String> {
+    // While the overlay is up, the main window stays out of the way. The
+    // frontend asks for the window when it has loaded, and that can happen
+    // in the middle of a selection.
+    if app.state::<AppState>().selecting() {
+        return Ok(());
+    }
     let main = main_window(app)?;
     // A minimized window stays minimized when it is shown: the shot has
     // to come up, so restore it first.
@@ -203,6 +234,7 @@ fn show_main_inner(app: &AppHandle, focus: bool) -> Result<(), String> {
 
 #[tauri::command]
 fn hide_overlay(app: AppHandle) -> Result<(), String> {
+    app.state::<AppState>().set_selecting(false);
     overlay_window(&app)?.hide().map_err(|e| e.to_string())
 }
 
@@ -340,6 +372,8 @@ fn fit_main(
 /// compositor to finish its frame is enough — no need to guess a delay.
 /// shortcut: 40ms can miss on a slow GPU, raise it if a dim shows in the shot.
 fn hide_overlay_and_wait(app: &AppHandle) {
+    // The selection is over: the main window may come back.
+    app.state::<AppState>().set_selecting(false);
     let (tx, rx) = std::sync::mpsc::channel();
     let owned = app.clone();
     if app
@@ -521,6 +555,11 @@ pub fn run() {
 
     builder = builder
         .setup(|app| {
+            // The overlay is sized over the whole virtual screen right away,
+            // while it is still hidden, so the first capture does not show
+            // it growing into place.
+            let _ = fit_overlay(app.handle());
+
             // The settings need the app handle (they live in its config
             // folder), so the state is built here.
             let settings = Settings::load(app.handle());
@@ -532,6 +571,7 @@ pub fn run() {
                 capture: CaptureState::default(),
                 work_area: Mutex::new(None),
                 settings,
+                selecting: AtomicBool::new(false),
             });
 
             // Minimal tray: Open + Capture + Quit.

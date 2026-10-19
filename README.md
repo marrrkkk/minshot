@@ -8,7 +8,7 @@ drag it into a terminal, or paste it. No history, no save dialog, no cloud.
 ## What it does
 
 1. **Launch.** A small window with one action, **New capture** — or press `Ctrl+Shift+4` anywhere. The window hides itself while you select, so it never covers the target area.
-2. **Select.** Drag a rectangle on the fullscreen overlay. `Esc` or a click cancels and brings the window back.
+2. **Select.** Drag a rectangle on the fullscreen overlay. The screen dims around the region you drag, so the part you are about to capture stays exactly as it is — the way the Windows snipping tool shows it. `Esc` or a click cancels and brings the window back.
 3. **Use it.** The same window reappears as the **shot view**: the capture drawn onto the app surface, with a compact toolbar (dimensions, `Copy`, `New capture`). The window takes the shape of the shot — a portrait shot gets a portrait window, a wide shot a wide one, a big capture is scaled down to the work area of the monitor it came from. Never cropped, never stretched.
 
 The shot can be **dragged into a terminal** (it shrinks and shows a drop hint while held) or pasted with `Ctrl+V` — the image is already on the clipboard.
@@ -81,7 +81,7 @@ The Rust tests that need a real desktop (screen capture, the clipboard, the fold
 cargo test --manifest-path src-tauri/Cargo.toml -- --include-ignored
 ```
 
-`scripts/drive.ps1` drives the running app from the command line (trigger the shortcut, drag a region, screenshot the window) — the manual test harness for the behaviours CI cannot check.
+`scripts/drive.ps1` drives the running app from the command line (trigger the shortcut, drag a region, screenshot the window) — the manual test harness for the behaviours CI cannot check. `scripts/screen.ps1` takes a picture of the whole screen and `scripts/compare.ps1` puts two pictures side by side, pixel by pixel: that is how you check that a capture comes out exactly as the screen looked, with no dim in it.
 
 ## Known limits
 

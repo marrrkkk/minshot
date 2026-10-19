@@ -56,13 +56,24 @@ function fitWindow(width: number, height: number): Promise<void> {
     });
 }
 
+function showMain(focus = true): Promise<void> {
+  return invoke("show_main", { focus })
+    .then(() => undefined)
+    .catch((err) => {
+      console.error("show main failed", err);
+    });
+}
+
 /// The launcher is sized to its content: the window is exactly as big as the
 /// app needs, never more.
-function fitHome() {
-  requestAnimationFrame(() => {
-    const r = home.getBoundingClientRect();
-    if (r.width > 0) void fitWindow(r.width, r.height);
-  });
+///
+/// No animation frame here on purpose: the window starts hidden, and a
+/// hidden window gets no frames. The measurement forces the layout, so it
+/// is correct either way.
+function fitHome(): Promise<void> {
+  const r = home.getBoundingClientRect();
+  if (r.width > 0) return fitWindow(r.width, r.height);
+  return Promise.resolve();
 }
 
 function showHome() {
@@ -74,13 +85,21 @@ function showHome() {
 function showNotice(text: string, kind?: "warn" | "error") {
   notice.textContent = text;
   notice.className = kind ? `notice show ${kind}` : "notice show";
-  fitHome();
+  void fitHome();
 }
 
+// The window is created hidden, so the launcher can be sized and centred
+// before anyone sees it: the user gets the finished window in the middle
+// of the screen, not an empty frame that jumps there a moment later.
 if (document.readyState === "loading") {
-  document.addEventListener("DOMContentLoaded", fitHome);
+  document.addEventListener("DOMContentLoaded", openLauncher);
 } else {
-  fitHome();
+  void openLauncher();
+}
+
+async function openLauncher() {
+  await fitHome();
+  await showMain();
 }
 
 // There is no Quit button: the native close button quits the app (the Rust
@@ -148,11 +167,7 @@ listen<CapturePayload>("capture-ready", (e) => {
   // The window is sized before it shows up, so it never appears in the
   // wrong shape for a frame. No focus: the user is usually headed back
   // to the terminal to paste.
-  void fitWindow(plan.windowWidth, plan.windowHeight).then(() =>
-    invoke("show_main", { focus: false }).catch((err) => {
-      console.error("show main failed", err);
-    }),
-  );
+  void fitWindow(plan.windowWidth, plan.windowHeight).then(() => showMain(false));
 });
 
 // A failed capture says so and offers the same action again.
