@@ -1,0 +1,116 @@
+<svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" width="1600" height="984" viewBox="0 0 1600 984"><defs><filter id="grey"><feColorMatrix type="saturate" values="0"/></filter></defs><rect width="1600" height="984" fill="#f7f7f4"/><text x="60" y="78" font-family="system-ui,-apple-system,'Segoe UI',Helvetica,Arial,sans-serif" font-size="40" font-weight="700" fill="#161616">minshot - logo concepts</text><text x="60" y="116" font-family="system-ui,-apple-system,'Segoe UI',Helvetica,Arial,sans-serif" font-size="20" fill="#6b6b6b">round 1 - greyscale, one colour</text><rect x="60" y="150" width="474.667" height="774" rx="18" fill="#fff" stroke="#e4e4e0" stroke-width="1"/><g filter="url(#grey)"><svg xmlns="http://www.w3.org/2000/svg" role="img" aria-labelledby="title" viewBox="0 0 256 256" x="90" y="190" width="414.667" height="300" preserveAspectRatio="xMidYMid meet">
+  <title id="c0-title">minshot symbol — Minus Window</title>
+  <g id="c0-symbol">
+    <path fill="#18181b" fill-rule="evenodd" d="M64 16 H192 A48 48 0 0 1 240 64 V192 A48 48 0 0 1 192 240 H64 A48 48 0 0 1 16 192 V64 A48 48 0 0 1 64 16 Z
+      M64 48 H192 A16 16 0 0 1 208 64 V192 A16 16 0 0 1 192 208 H64 A16 16 0 0 1 48 192 V64 A16 16 0 0 1 64 48 Z"/>
+    <path fill="#18181b" d="M84 114 H172 V142 H84 Z"/>
+  </g>
+</svg>
+</g><g filter="url(#grey)"><svg xmlns="http://www.w3.org/2000/svg" role="img" aria-labelledby="title" viewBox="0 0 576 256" x="90" y="514" width="414.667" height="120" preserveAspectRatio="xMidYMid meet">
+  <title id="l0-title">minshot lockup — Minus Window (wordmark is placeholder text, to be outlined)</title>
+  <g id="l0-symbol">
+    <g transform="translate(40 52) scale(0.5)">
+      <path fill="#18181b" fill-rule="evenodd" d="M64 16 H192 A48 48 0 0 1 240 64 V192 A48 48 0 0 1 192 240 H64 A48 48 0 0 1 16 192 V64 A48 48 0 0 1 64 16 Z
+        M64 48 H192 A16 16 0 0 1 208 64 V192 A16 16 0 0 1 192 208 H64 A16 16 0 0 1 48 192 V64 A16 16 0 0 1 64 48 Z"/>
+      <path fill="#18181b" d="M84 114 H172 V142 H84 Z"/>
+    </g>
+  </g>
+  <g id="l0-wordmark">
+    <text x="200" y="158" font-family="Inter, 'Segoe UI', system-ui, sans-serif" font-size="88" font-weight="600" letter-spacing="-1.76" fill="#18181b">minshot</text>
+  </g>
+</svg>
+</g><g filter="url(#grey)"><svg xmlns="http://www.w3.org/2000/svg" role="img" aria-labelledby="title" viewBox="0 0 256 256" x="90" y="660" width="64" height="64" preserveAspectRatio="xMidYMid meet">
+  <title id="s064-title">minshot symbol — Minus Window</title>
+  <g id="s064-symbol">
+    <path fill="#18181b" fill-rule="evenodd" d="M64 16 H192 A48 48 0 0 1 240 64 V192 A48 48 0 0 1 192 240 H64 A48 48 0 0 1 16 192 V64 A48 48 0 0 1 64 16 Z
+      M64 48 H192 A16 16 0 0 1 208 64 V192 A16 16 0 0 1 192 208 H64 A16 16 0 0 1 48 192 V64 A16 16 0 0 1 64 48 Z"/>
+    <path fill="#18181b" d="M84 114 H172 V142 H84 Z"/>
+  </g>
+</svg>
+</g><text x="122" y="744" font-family="system-ui,-apple-system,'Segoe UI',Helvetica,Arial,sans-serif" font-size="12" fill="#8a8a8a" text-anchor="middle">64px</text><g filter="url(#grey)"><svg xmlns="http://www.w3.org/2000/svg" role="img" aria-labelledby="title" viewBox="0 0 256 256" x="180" y="692" width="32" height="32" preserveAspectRatio="xMidYMid meet">
+  <title id="s032-title">minshot symbol — Minus Window</title>
+  <g id="s032-symbol">
+    <path fill="#18181b" fill-rule="evenodd" d="M64 16 H192 A48 48 0 0 1 240 64 V192 A48 48 0 0 1 192 240 H64 A48 48 0 0 1 16 192 V64 A48 48 0 0 1 64 16 Z
+      M64 48 H192 A16 16 0 0 1 208 64 V192 A16 16 0 0 1 192 208 H64 A16 16 0 0 1 48 192 V64 A16 16 0 0 1 64 48 Z"/>
+    <path fill="#18181b" d="M84 114 H172 V142 H84 Z"/>
+  </g>
+</svg>
+</g><text x="196" y="744" font-family="system-ui,-apple-system,'Segoe UI',Helvetica,Arial,sans-serif" font-size="12" fill="#8a8a8a" text-anchor="middle">32px</text><g filter="url(#grey)"><svg xmlns="http://www.w3.org/2000/svg" role="img" aria-labelledby="title" viewBox="0 0 256 256" x="238" y="708" width="16" height="16" preserveAspectRatio="xMidYMid meet">
+  <title id="s016-title">minshot symbol — Minus Window</title>
+  <g id="s016-symbol">
+    <path fill="#18181b" fill-rule="evenodd" d="M64 16 H192 A48 48 0 0 1 240 64 V192 A48 48 0 0 1 192 240 H64 A48 48 0 0 1 16 192 V64 A48 48 0 0 1 64 16 Z
+      M64 48 H192 A16 16 0 0 1 208 64 V192 A16 16 0 0 1 192 208 H64 A16 16 0 0 1 48 192 V64 A16 16 0 0 1 64 48 Z"/>
+    <path fill="#18181b" d="M84 114 H172 V142 H84 Z"/>
+  </g>
+</svg>
+</g><text x="246" y="744" font-family="system-ui,-apple-system,'Segoe UI',Helvetica,Arial,sans-serif" font-size="12" fill="#8a8a8a" text-anchor="middle">16px</text><text x="90.0" y="780" font-family="system-ui,-apple-system,'Segoe UI',Helvetica,Arial,sans-serif" font-size="26" font-weight="700" fill="#161616">A · Minus Window</text><text x="90.0" y="814" font-family="system-ui,-apple-system,'Segoe UI',Helvetica,Arial,sans-serif" font-size="19" fill="#555">A window reduced to its dash: the app gets</text><text x="90.0" y="840" font-family="system-ui,-apple-system,'Segoe UI',Helvetica,Arial,sans-serif" font-size="19" fill="#555">out of your way; minus everything, keep the</text><text x="90.0" y="866" font-family="system-ui,-apple-system,'Segoe UI',Helvetica,Arial,sans-serif" font-size="19" fill="#555">shot.</text><rect x="562.667" y="150" width="474.667" height="774" rx="18" fill="#fff" stroke="#e4e4e0" stroke-width="1"/><g filter="url(#grey)"><svg xmlns="http://www.w3.org/2000/svg" role="img" aria-labelledby="title" viewBox="0 0 256 256" x="592.667" y="190" width="414.667" height="300" preserveAspectRatio="xMidYMid meet">
+  <title id="c1-title">minshot symbol — Two Corners</title>
+  <g id="c1-symbol">
+    <path fill="#18181b" d="M16 16 H112 V56 H56 V112 H16 Z M240 240 H144 V200 H200 V144 H240 Z"/>
+  </g>
+</svg>
+</g><g filter="url(#grey)"><svg xmlns="http://www.w3.org/2000/svg" role="img" aria-labelledby="title" viewBox="0 0 576 256" x="592.667" y="514" width="414.667" height="120" preserveAspectRatio="xMidYMid meet">
+  <title id="l1-title">minshot lockup — Two Corners (wordmark is placeholder text, to be outlined)</title>
+  <g id="l1-symbol">
+    <g transform="translate(40 64) scale(0.5)">
+      <path fill="#18181b" d="M16 16 H112 V56 H56 V112 H16 Z M240 240 H144 V200 H200 V144 H240 Z"/>
+    </g>
+  </g>
+  <g id="l1-wordmark">
+    <text x="200" y="158" font-family="Inter, 'Segoe UI', system-ui, sans-serif" font-size="88" font-weight="600" letter-spacing="-1.76" fill="#18181b">minshot</text>
+  </g>
+</svg>
+</g><g filter="url(#grey)"><svg xmlns="http://www.w3.org/2000/svg" role="img" aria-labelledby="title" viewBox="0 0 256 256" x="592.667" y="660" width="64" height="64" preserveAspectRatio="xMidYMid meet">
+  <title id="s164-title">minshot symbol — Two Corners</title>
+  <g id="s164-symbol">
+    <path fill="#18181b" d="M16 16 H112 V56 H56 V112 H16 Z M240 240 H144 V200 H200 V144 H240 Z"/>
+  </g>
+</svg>
+</g><text x="624.667" y="744" font-family="system-ui,-apple-system,'Segoe UI',Helvetica,Arial,sans-serif" font-size="12" fill="#8a8a8a" text-anchor="middle">64px</text><g filter="url(#grey)"><svg xmlns="http://www.w3.org/2000/svg" role="img" aria-labelledby="title" viewBox="0 0 256 256" x="682.667" y="692" width="32" height="32" preserveAspectRatio="xMidYMid meet">
+  <title id="s132-title">minshot symbol — Two Corners</title>
+  <g id="s132-symbol">
+    <path fill="#18181b" d="M16 16 H112 V56 H56 V112 H16 Z M240 240 H144 V200 H200 V144 H240 Z"/>
+  </g>
+</svg>
+</g><text x="698.667" y="744" font-family="system-ui,-apple-system,'Segoe UI',Helvetica,Arial,sans-serif" font-size="12" fill="#8a8a8a" text-anchor="middle">32px</text><g filter="url(#grey)"><svg xmlns="http://www.w3.org/2000/svg" role="img" aria-labelledby="title" viewBox="0 0 256 256" x="740.667" y="708" width="16" height="16" preserveAspectRatio="xMidYMid meet">
+  <title id="s116-title">minshot symbol — Two Corners</title>
+  <g id="s116-symbol">
+    <path fill="#18181b" d="M16 16 H112 V56 H56 V112 H16 Z M240 240 H144 V200 H200 V144 H240 Z"/>
+  </g>
+</svg>
+</g><text x="748.667" y="744" font-family="system-ui,-apple-system,'Segoe UI',Helvetica,Arial,sans-serif" font-size="12" fill="#8a8a8a" text-anchor="middle">16px</text><text x="592.6666666666667" y="780" font-family="system-ui,-apple-system,'Segoe UI',Helvetica,Arial,sans-serif" font-size="26" font-weight="700" fill="#161616">B · Two Corners</text><text x="592.6666666666667" y="814" font-family="system-ui,-apple-system,'Segoe UI',Helvetica,Arial,sans-serif" font-size="19" fill="#555">A capture reduced to two corners - where</text><text x="592.6666666666667" y="840" font-family="system-ui,-apple-system,'Segoe UI',Helvetica,Arial,sans-serif" font-size="19" fill="#555">the drag starts and ends; nothing else</text><text x="592.6666666666667" y="866" font-family="system-ui,-apple-system,'Segoe UI',Helvetica,Arial,sans-serif" font-size="19" fill="#555">survives.</text><rect x="1065.33" y="150" width="474.667" height="774" rx="18" fill="#fff" stroke="#161616" stroke-width="2"/><g filter="url(#grey)"><svg xmlns="http://www.w3.org/2000/svg" role="img" aria-labelledby="title" viewBox="0 0 256 256" x="1095.33" y="190" width="414.667" height="300" preserveAspectRatio="xMidYMid meet">
+  <title id="c2-title">minshot symbol — Squared m</title>
+  <g id="c2-symbol">
+    <path fill="#18181b" d="M16 40 H240 V216 H204 V76 H146 V216 H110 V76 H52 V216 H16 Z"/>
+  </g>
+</svg>
+</g><g filter="url(#grey)"><svg xmlns="http://www.w3.org/2000/svg" role="img" aria-labelledby="title" viewBox="0 0 576 256" x="1095.33" y="514" width="414.667" height="120" preserveAspectRatio="xMidYMid meet">
+  <title id="l2-title">minshot lockup — Squared m (wordmark is placeholder text, to be outlined)</title>
+  <g id="l2-symbol">
+    <g transform="translate(40 64) scale(0.5)">
+      <path fill="#18181b" d="M16 40 H240 V216 H204 V76 H146 V216 H110 V76 H52 V216 H16 Z"/>
+    </g>
+  </g>
+  <g id="l2-wordmark">
+    <text x="200" y="158" font-family="Inter, 'Segoe UI', system-ui, sans-serif" font-size="88" font-weight="600" letter-spacing="-1.76" fill="#18181b">minshot</text>
+  </g>
+</svg>
+</g><g filter="url(#grey)"><svg xmlns="http://www.w3.org/2000/svg" role="img" aria-labelledby="title" viewBox="0 0 256 256" x="1095.33" y="660" width="64" height="64" preserveAspectRatio="xMidYMid meet">
+  <title id="s264-title">minshot symbol — Squared m</title>
+  <g id="s264-symbol">
+    <path fill="#18181b" d="M16 40 H240 V216 H204 V76 H146 V216 H110 V76 H52 V216 H16 Z"/>
+  </g>
+</svg>
+</g><text x="1127.33" y="744" font-family="system-ui,-apple-system,'Segoe UI',Helvetica,Arial,sans-serif" font-size="12" fill="#8a8a8a" text-anchor="middle">64px</text><g filter="url(#grey)"><svg xmlns="http://www.w3.org/2000/svg" role="img" aria-labelledby="title" viewBox="0 0 256 256" x="1185.33" y="692" width="32" height="32" preserveAspectRatio="xMidYMid meet">
+  <title id="s232-title">minshot symbol — Squared m</title>
+  <g id="s232-symbol">
+    <path fill="#18181b" d="M16 40 H240 V216 H204 V76 H146 V216 H110 V76 H52 V216 H16 Z"/>
+  </g>
+</svg>
+</g><text x="1201.33" y="744" font-family="system-ui,-apple-system,'Segoe UI',Helvetica,Arial,sans-serif" font-size="12" fill="#8a8a8a" text-anchor="middle">32px</text><g filter="url(#grey)"><svg xmlns="http://www.w3.org/2000/svg" role="img" aria-labelledby="title" viewBox="0 0 256 256" x="1243.33" y="708" width="16" height="16" preserveAspectRatio="xMidYMid meet">
+  <title id="s216-title">minshot symbol — Squared m</title>
+  <g id="s216-symbol">
+    <path fill="#18181b" d="M16 40 H240 V216 H204 V76 H146 V216 H110 V76 H52 V216 H16 Z"/>
+  </g>
+</svg>
+</g><text x="1251.33" y="744" font-family="system-ui,-apple-system,'Segoe UI',Helvetica,Arial,sans-serif" font-size="12" fill="#8a8a8a" text-anchor="middle">16px</text><text x="1095.3333333333335" y="780" font-family="system-ui,-apple-system,'Segoe UI',Helvetica,Arial,sans-serif" font-size="26" font-weight="700" fill="#161616">C · Squared m</text><text x="1095.3333333333335" y="808" font-family="system-ui,-apple-system,'Segoe UI',Helvetica,Arial,sans-serif" font-size="15" font-weight="700" fill="#161616" letter-spacing="1.5">RECOMMENDED</text><text x="1095.3333333333335" y="842" font-family="system-ui,-apple-system,'Segoe UI',Helvetica,Arial,sans-serif" font-size="19" fill="#555">The name reduced to one letter: a squared m</text><text x="1095.3333333333335" y="868" font-family="system-ui,-apple-system,'Segoe UI',Helvetica,Arial,sans-serif" font-size="19" fill="#555">whose top corners are also the capture</text><text x="1095.3333333333335" y="894" font-family="system-ui,-apple-system,'Segoe UI',Helvetica,Arial,sans-serif" font-size="19" fill="#555">frame.</text></svg>

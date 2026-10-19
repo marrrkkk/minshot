@@ -1,0 +1,11 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 576 256" width="576" height="256" role="img" aria-labelledby="title">
+  <title id="title">minshot lockup — Squared m (wordmark is placeholder text, to be outlined)</title>
+  <g id="symbol">
+    <g transform="translate(40 64) scale(0.5)">
+      <path fill="#18181b" d="M16 40 H240 V216 H204 V76 H146 V216 H110 V76 H52 V216 H16 Z"/>
+    </g>
+  </g>
+  <g id="wordmark">
+    <text x="200" y="158" font-family="Inter, 'Segoe UI', system-ui, sans-serif" font-size="88" font-weight="600" letter-spacing="-1.76" fill="#18181b">minshot</text>
+  </g>
+</svg>

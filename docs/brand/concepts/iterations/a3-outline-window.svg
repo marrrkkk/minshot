@@ -1,0 +1,8 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 256 256" width="256" height="256" role="img" aria-labelledby="title">
+  <title id="title">minshot — Minus Window, outline variant</title>
+  <g id="symbol">
+    <path fill="#18181b" fill-rule="evenodd" d="M64 16 H192 A48 48 0 0 1 240 64 V192 A48 48 0 0 1 192 240 H64 A48 48 0 0 1 16 192 V64 A48 48 0 0 1 64 16 Z
+      M64 48 H192 A16 16 0 0 1 208 64 V192 A16 16 0 0 1 192 208 H64 A16 16 0 0 1 48 192 V64 A16 16 0 0 1 64 48 Z"/>
+    <path fill="#18181b" d="M84 114 H172 V142 H84 Z"/>
+  </g>
+</svg>
