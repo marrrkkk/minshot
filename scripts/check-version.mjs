@@ -13,6 +13,9 @@ const tag = (process.argv[2] ?? "").replace(/^v/, "");
 const versions = {
   "package.json": JSON.parse(read("package.json")).version,
   "Cargo.toml": read("src-tauri/Cargo.toml").match(/^version = "(.+)"$/m)?.[1],
+  "Cargo.lock": read("src-tauri/Cargo.lock").match(
+    /\[\[package\]\]\s*\nname = "minshot"\s*\nversion = "(.+)"/,
+  )?.[1],
   "tauri.conf.json": JSON.parse(read("src-tauri/tauri.conf.json")).version,
 };
 
@@ -22,4 +25,6 @@ if (!tag || wrong.length > 0) {
   console.error(versions);
   process.exit(1);
 }
-console.log(`version ${tag} matches package.json, Cargo.toml and tauri.conf.json`);
+console.log(
+  `version ${tag} matches package.json, Cargo.toml, Cargo.lock and tauri.conf.json`,
+);
