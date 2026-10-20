@@ -1,6 +1,6 @@
 [package]
 name = "minshot"
-version = "0.4.0"
+version = "0.4.1"
 edition = "2021"
 authors = ["marrrkkk <marklouie.dev@gmail.com>"]
 description = "Minimal Windows screenshot-to-terminal utility"
