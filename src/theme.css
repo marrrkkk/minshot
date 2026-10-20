@@ -155,6 +155,11 @@ body {
   background: var(--surface-hi);
   border-color: var(--line-hi);
 }
+/* The picture did not make it to the clipboard: the copy button says so. */
+.btn-secondary.warn {
+  border-color: var(--warn);
+  color: var(--warn);
+}
 .btn-lg {
   height: 36px;
   padding: 0 14px;
@@ -176,18 +181,6 @@ body {
   font-weight: 600;
   line-height: 1.25;
   text-align: center;
-}
-
-/* ---- status dot: the capture's live state ---- */
-.dot {
-  width: 6px;
-  height: 6px;
-  border-radius: 50%;
-  background: var(--accent);
-  flex: none;
-}
-.dot.warn {
-  background: var(--warn);
 }
 
 /* ---- notices: only when there is something to say ---- */

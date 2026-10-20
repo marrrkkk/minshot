@@ -23,7 +23,9 @@ export interface ShotPayload {
 export interface ShotEls {
   img: { src: string; style: { width: string; height: string } };
   dims: { textContent: string; title: string };
-  dot: {
+  /// The copy button: it carries the clipboard state, there is no dot
+  /// for it any more.
+  copy: {
     title: string;
     classList: { add(c: string): void; remove(c: string): void };
   };
@@ -93,11 +95,12 @@ export function renderShot(els: ShotEls, payload: ShotPayload): void {
   els.img.src = payload.src;
   els.dims.textContent = `${payload.width} × ${payload.height}`;
   els.dims.title = `PNG · ${payload.width} × ${payload.height}`;
-  els.dot.title = payload.clipboard
+  // The copy button says where the picture is: on the clipboard, or not.
+  els.copy.title = payload.clipboard
     ? "On the clipboard"
     : "Clipboard copy failed — press Copy";
-  els.dot.classList.remove("warn");
-  if (!payload.clipboard) els.dot.classList.add("warn");
+  els.copy.classList.remove("warn");
+  if (!payload.clipboard) els.copy.classList.add("warn");
   els.home.classList.remove("active");
   els.shot.classList.add("active");
 }

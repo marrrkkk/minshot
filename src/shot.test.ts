@@ -9,14 +9,14 @@ function fakeEls() {
   const homeAdded: string[] = [];
   const homeRemoved: string[] = [];
   const shotAdded: string[] = [];
-  const dotAdded: string[] = [];
+  const copyAdded: string[] = [];
   const els: ShotEls = {
     img: { src: "", style: { width: "", height: "" } },
     dims: { textContent: "", title: "" },
-    dot: {
+    copy: {
       title: "",
       classList: {
-        add: (c: string) => dotAdded.push(c),
+        add: (c: string) => copyAdded.push(c),
         remove: () => {},
       },
     },
@@ -33,7 +33,7 @@ function fakeEls() {
       },
     },
   };
-  return { els, homeAdded, homeRemoved, shotAdded, dotAdded };
+  return { els, homeAdded, homeRemoved, shotAdded, copyAdded };
 }
 
 const shot: ShotPayload = {
@@ -68,9 +68,10 @@ test("the shot view replaces the launcher", () => {
 });
 
 test("a capture that did not reach the clipboard is marked", () => {
-  const { els, dotAdded } = fakeEls();
+  const { els, copyAdded } = fakeEls();
   renderShot(els, { ...shot, clipboard: false });
-  assert.ok(dotAdded.includes("warn"));
+  assert.ok(copyAdded.includes("warn"));
+  assert.match(els.copy.title, /failed/);
 });
 
 // --- the plan: the image size and the window size that holds it ---

@@ -11,12 +11,6 @@
 <body>
   <!-- Launcher: the app's front door. -->
   <div id="home" class="view active">
-    <header class="appbar" data-tauri-drag-region="deep">
-      <span class="mark" aria-hidden="true">
-        <svg viewBox="0 0 256 256"><path fill="currentColor" d="M16 40 H240 V216 H204 V76 H146 V216 H110 V76 H52 V216 H16 Z"/></svg>
-      </span>
-      <span class="wordmark">minshot</span>
-    </header>
     <div class="home-body">
       <button id="newBtn" class="btn btn-primary btn-lg newBtn" type="button" title="Capture a region of the screen">
         <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M6 2v14a2 2 0 0 0 2 2h14M18 22V8a2 2 0 0 0-2-2H2"/></svg>
@@ -41,8 +35,6 @@
   <div id="shot" class="view">
     <div class="toolbar" data-tauri-drag-region="deep">
       <div class="tb-meta">
-        <span class="dot" id="clipDot" title="On the clipboard"></span>
-        <span class="tb-title">Screenshot</span>
         <span class="tb-dims" id="dims">–</span>
       </div>
       <div class="tb-actions">

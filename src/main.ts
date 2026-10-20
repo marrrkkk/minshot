@@ -13,7 +13,6 @@ const home = document.getElementById("home") as HTMLDivElement;
 const shotView = document.getElementById("shot") as HTMLDivElement;
 const img = document.getElementById("shotImg") as HTMLImageElement;
 const dims = document.getElementById("dims") as HTMLSpanElement;
-const dot = document.getElementById("clipDot") as HTMLSpanElement;
 const toolbar = document.querySelector(".toolbar") as HTMLElement;
 const preview = document.getElementById("preview") as HTMLDivElement;
 const notice = document.getElementById("notice") as HTMLParagraphElement;
@@ -25,7 +24,7 @@ const saveDirBtn = document.getElementById("saveDirBtn") as HTMLButtonElement;
 const saveDirReset = document.getElementById("saveDirReset") as HTMLButtonElement;
 const updateBtn = document.getElementById("updateBtn") as HTMLButtonElement;
 
-const els: ShotEls = { img, dims, dot, home, shot: shotView };
+const els: ShotEls = { img, dims, copy: copyBtn, home, shot: shotView };
 const saveEls: SaveDirEls = {
   dir: saveDir,
   reset: saveDirReset,
@@ -207,13 +206,13 @@ function padPx(): number {
 let copyTimer = 0;
 function setCopyState(label: string, failed: boolean) {
   copyLabel.textContent = label;
-  dot.classList.toggle("warn", failed);
-  dot.title = failed ? "Clipboard copy failed" : "On the clipboard";
+  copyBtn.classList.toggle("warn", failed);
+  copyBtn.title = failed ? "Clipboard copy failed" : "On the clipboard";
   window.clearTimeout(copyTimer);
   copyTimer = window.setTimeout(() => {
     copyLabel.textContent = "Copy";
-    dot.classList.remove("warn");
-    dot.title = "On the clipboard";
+    copyBtn.classList.remove("warn");
+    copyBtn.title = "On the clipboard";
   }, 1400);
 }
 

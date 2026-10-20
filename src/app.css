@@ -17,42 +17,13 @@
   width: 248px;
   max-width: 100%;
   margin: 0 auto;
-  padding: 10px 12px 12px;
-}
-
-.appbar {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  height: 22px;
-  flex: none;
-}
-.mark {
-  display: grid;
-  place-items: center;
-  width: 20px;
-  height: 20px;
-  border-radius: 5px;
-  background: var(--primary);
-  color: var(--primary-ink);
-  flex: none;
-}
-.mark svg {
-  width: 13px;
-  height: 13px;
-  display: block;
-}
-.wordmark {
-  font-size: 13px;
-  font-weight: 600;
-  letter-spacing: -0.01em;
+  padding: 12px;
 }
 
 .home-body {
   display: flex;
   flex-direction: column;
   gap: 10px;
-  margin-top: 14px;
 }
 .home-body .btn-lg {
   width: 100%;
@@ -138,10 +109,6 @@
   gap: 8px;
   min-width: 0;
   font-size: 12px;
-}
-.tb-title {
-  color: var(--fg);
-  font-weight: 500;
 }
 .tb-dims {
   color: var(--fg-faint);

@@ -166,6 +166,27 @@ fn main_window(app: &AppHandle) -> Result<WebviewWindow, String> {
         .ok_or_else(|| "main window missing".to_string())
 }
 
+/// Centre the launcher on its monitor and show it.
+///
+/// The window is created hidden and with the size the config gives it. It
+/// is put in place and shown right here, while the webview is still
+/// loading: the user sees the empty launcher straight away, in the middle
+/// of the screen, instead of nothing for a second and a half. The frontend
+/// refines the size a moment later, when it has measured the content —
+/// by then the window is already where it belongs, so it does not jump.
+fn open_launcher(app: &AppHandle) -> Result<(), String> {
+    let main = main_window(app)?;
+    if let Some(work) = work_area_of_window(app) {
+        let size = main.inner_size().map_err(|e| e.to_string())?;
+        // Centre the whole window (frame included) in the work area.
+        let x = work.x + (work.width.saturating_sub(size.width + work.frame_w) / 2) as i32;
+        let y = work.y + (work.height.saturating_sub(size.height + work.frame_h) / 2) as i32;
+        main.set_position(tauri::Position::Physical(tauri::PhysicalPosition { x, y }))
+            .map_err(|e| e.to_string())?;
+    }
+    main.show().map_err(|e| e.to_string())
+}
+
 /// Put the overlay over the whole virtual screen, so every monitor is
 /// selectable.
 ///
@@ -559,6 +580,15 @@ pub fn run() {
             // while it is still hidden, so the first capture does not show
             // it growing into place.
             let _ = fit_overlay(app.handle());
+
+            // The launcher comes on screen straight away, empty but in the
+            // right place, while the webview loads.
+            let _ = open_launcher(app.handle());
+
+            // The title carries the version: it is the one place left that
+            // says which build is running.
+            let title = format!("minshot {}", env!("CARGO_PKG_VERSION"));
+            let _ = main_window(app.handle()).map(|w| w.set_title(&title));
 
             // The settings need the app handle (they live in its config
             // folder), so the state is built here.
