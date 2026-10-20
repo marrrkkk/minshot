@@ -87,7 +87,9 @@ The dev harness in `scripts/` drives the running app and checks what it did:
 - `windowshot.ps1` — a picture of one window.
 - `screen.ps1` — a picture of the whole screen.
 - `compare.ps1` — two pictures side by side, pixel by pixel. This is how you check that a capture comes out exactly as the screen looked, with no dim in it.
+- `edges.ps1` — the brightness of the four edges of a capture. A line of the selection in the picture shows up here.
 - `startup.ps1` — watch the window from the moment the process starts: when it appears, and whether it ever moves afterwards.
+- `overlay-check.ps1` — capture a region, open the overlay again, and see that the rectangle of the last shot is gone.
 
 ## Known limits
 

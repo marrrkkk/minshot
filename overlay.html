@@ -27,12 +27,14 @@
    * spread far enough to cover the screen — that darkens everything
    * EXCEPT the selection, the way the Windows snipping tool shows it.
    * The edge is an outline (drawn outside the box), never a border: a
-   * border would sit inside the captured region and show up in the shot. */
+   * border would sit inside the captured region and show up in the shot.
+   * The edge only appears once there is a selection to point at. */
   #sel { position: fixed; background: transparent;
     box-shadow: 0 0 0 100vmax rgba(0,0,0,0.35);
-    outline: 1px solid rgba(250,250,250,0.9);
+    outline: none;
     z-index: 1;
     display: none; pointer-events: none; }
+  #sel.picked { outline: 1px solid rgba(250,250,250,0.9); }
   #hint { position: fixed; top: 14px; left: 50%; transform: translateX(-50%);
     display: flex; gap: 6px; align-items: center; white-space: nowrap;
     background: rgba(9,9,11,0.92); color: #fafafa;

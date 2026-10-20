@@ -227,6 +227,10 @@ fn show_overlay_inner(app: &AppHandle) -> Result<(), String> {
     fit_overlay(app)?;
     overlay.show().map_err(|e| e.to_string())?;
     overlay.set_focus().map_err(|e| e.to_string())?;
+    // The overlay's page remembers the last selection: clear it, or the
+    // rectangle of the previous shot is on the screen when the overlay
+    // comes up.
+    let _ = overlay.eval("window.__minshotReset && window.__minshotReset()");
     Ok(())
 }
 
